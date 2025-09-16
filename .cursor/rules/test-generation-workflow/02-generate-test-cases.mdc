@@ -1,0 +1,62 @@
+---
+description: Generate comprehensive test cases based on code analysis
+globs:
+  - "**/test-analysis-*.md"
+alwaysApply: false
+---
+# Rule: Generate Test Cases from Analysis
+
+## Goal
+
+To guide an AI assistant in generating actual test code based on the test analysis, creating comprehensive test suites with proper setup, assertions, and coverage.
+
+## Process
+
+1. **Load Test Analysis**: Read the test analysis document from `/tests/test-analysis-[TARGET_NAME].md`
+2. **Identify Testing Framework**: Detect or ask which framework to use (Jest, pytest, Mocha, etc.)
+3. **Generate Test Structure**: Create test file with proper imports and setup
+4. **Implement Test Cases**: Write tests for each identified scenario
+5. **Add Mocking/Fixtures**: Include necessary mocks and test data
+6. **Save Test File**: Create test file in appropriate location
+
+## Test Implementation Guidelines
+
+- **Test Organization**: Group related tests in describe/context blocks
+- **Test Names**: Use descriptive names that explain what is being tested
+- **Assertions**: Be specific about expected outcomes
+- **Test Independence**: Each test should run independently
+- **Coverage**: Include happy path, edge cases, and error scenarios
+
+## Test File Structure
+
+```javascript
+// Example for JavaScript/Jest
+describe('ComponentName', () => {
+  beforeEach(() => {
+    // Setup
+  });
+
+  describe('methodName', () => {
+    it('should handle normal input correctly', () => {
+      // Test implementation
+    });
+
+    it('should handle edge case', () => {
+      // Test implementation
+    });
+  });
+});
+```
+
+## Output
+
+- **Location**: Same directory as source file or `/tests/` directory
+- **Naming**: `[filename].test.[ext]` or `test_[filename].[ext]`
+- **Language**: Match the source code language
+
+## Final Instructions
+
+1. Generate runnable test code, not pseudocode
+2. Include all necessary imports and setup
+3. Follow project's existing test patterns
+4. Ensure tests are maintainable and clear

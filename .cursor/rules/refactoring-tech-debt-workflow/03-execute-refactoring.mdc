@@ -1,0 +1,71 @@
+---
+description: Execute refactoring tasks safely and systematically
+globs:
+  - "**/refactoring-plan-*.md"
+alwaysApply: false
+---
+# Rule: Execute Refactoring Tasks
+
+## Goal
+
+To guide an AI assistant in safely executing refactoring tasks while maintaining code functionality and quality.
+
+## Process
+
+1. **Load Refactoring Plan**: Read from `/refactoring/refactoring-plan-[TARGET_NAME].md`
+2. **Setup Safety Measures**: Ensure tests pass, create branch, backup if needed
+3. **Execute One Task**: Refactor one task at a time
+4. **Verify Changes**: Run tests, check functionality
+5. **Document Progress**: Update plan with completion status
+
+## Execution Protocol
+
+**One task at a time approach:**
+1. Select next task from plan
+2. Verify current tests pass
+3. Make refactoring changes
+4. Run tests again
+5. If tests pass, commit changes
+6. If tests fail, fix or rollback
+7. Update task status in plan
+8. Pause for user confirmation before next task
+
+## Refactoring Patterns
+
+Common refactoring techniques:
+- **Extract Method**: Break long functions into smaller ones
+- **Rename**: Improve variable/function names for clarity
+- **Remove Duplication**: Extract common code to shared functions
+- **Simplify Conditionals**: Replace complex if/else with cleaner logic
+- **Extract Class**: Move related functionality to new class
+- **Replace Magic Numbers**: Use named constants
+
+## Safety Checklist
+
+Before each refactoring:
+- [ ] All tests passing
+- [ ] Code committed/backed up
+- [ ] Refactoring scope clear
+- [ ] Rollback plan ready
+
+After each refactoring:
+- [ ] Tests still passing
+- [ ] Functionality unchanged
+- [ ] Code cleaner/simpler
+- [ ] Changes committed
+
+## Documentation
+
+Track progress in refactoring plan:
+- Mark tasks as [IN PROGRESS] when starting
+- Mark tasks as [COMPLETE] when done
+- Note any issues or deviations
+- Record actual effort vs estimate
+
+## Final Instructions
+
+1. Never refactor without passing tests
+2. Make small, incremental changes
+3. Commit after each successful refactoring
+4. Keep functionality identical
+5. Stop and ask for help if tests fail

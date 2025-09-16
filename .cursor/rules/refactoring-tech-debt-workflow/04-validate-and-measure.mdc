@@ -1,0 +1,70 @@
+---
+description: Validate refactoring success and measure improvements
+globs:
+  - "**/refactoring-plan-*.md"
+alwaysApply: false
+---
+# Rule: Validate and Measure Refactoring Success
+
+## Goal
+
+To guide an AI assistant in validating that refactoring achieved its goals and measuring the improvements made.
+
+## Process
+
+1. **Review Completed Tasks**: Check all refactoring tasks marked complete
+2. **Run Validation Tests**: Execute comprehensive test suite
+3. **Measure Improvements**: Compare before/after metrics
+4. **Document Results**: Create validation report
+5. **Save Report**: Generate `refactoring-results-[TARGET_NAME].md` in `/refactoring/`
+
+## Validation Checklist
+
+Verify these aspects:
+- **Functionality**: All features work as before
+- **Tests**: All tests pass, no new failures
+- **Performance**: No performance degradation
+- **Code Quality**: Improved readability and maintainability
+- **Documentation**: Updated to reflect changes
+
+## Metrics to Measure
+
+Compare before and after:
+- **Code Metrics**: Lines of code, cyclomatic complexity, duplication
+- **Test Coverage**: Percentage covered, number of tests
+- **Performance**: Response times, memory usage
+- **Build Time**: Compilation and test execution speed
+- **Technical Debt Score**: If using tools like SonarQube
+
+## Results Report Structure
+
+The report should include:
+
+1. **Executive Summary**: What was refactored and why
+2. **Tasks Completed**: List of all refactoring done
+3. **Metrics Comparison**: Before vs after measurements
+4. **Benefits Achieved**: Concrete improvements made
+5. **Lessons Learned**: What worked well, what didn't
+6. **Remaining Debt**: What still needs attention
+
+## Success Criteria
+
+Refactoring is successful if:
+- All planned tasks completed
+- No functionality broken
+- Measurable improvement in at least one metric
+- Code is easier to understand and maintain
+- Team agrees changes are beneficial
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/refactoring/`
+- **Filename**: `refactoring-results-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Be honest about what improved and what didn't
+2. Include specific metrics and examples
+3. Highlight unexpected benefits or issues
+4. Recommend next steps for continued improvement

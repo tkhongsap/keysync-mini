@@ -1,0 +1,79 @@
+---
+description: Publish review results and create final documentation
+alwaysApply: false
+---
+# Rule: Publish Review Results
+
+## Goal
+
+To guide an AI assistant in publishing review results to GitHub/GitLab and creating final documentation for stakeholders.
+
+## Process
+
+1. **Load Review Report**: Read from `/reviews/review-report-[TARGET_NAME].md`
+2. **Format for Publishing**: Convert findings to platform-specific format
+3. **Create Issues**: Generate GitHub/GitLab issues for critical findings
+4. **Generate Documentation**: Create executive summary and technical guide
+5. **Archive Materials**: Store all review artifacts for future reference
+
+## Publishing Options
+
+### GitHub Integration
+Create issues for:
+- Critical security vulnerabilities
+- High-priority bugs
+- Performance bottlenecks
+
+Issue format:
+```markdown
+## [SEVERITY]: [Issue Title]
+
+**File**: `[FILE_PATH]`
+**Category**: [Category]
+
+### Problem
+[Description of the issue]
+
+### Recommended Solution
+[How to fix it]
+
+### Acceptance Criteria
+- [ ] Issue resolved
+- [ ] Tests added
+- [ ] Code reviewed
+```
+
+### GitLab Integration
+Similar format, using GitLab API for issue creation and merge request comments.
+
+## Documentation Outputs
+
+### Executive Summary
+- Key findings overview
+- Business impact assessment
+- Priority recommendations
+- Resource requirements
+
+### Technical Implementation Guide
+- Detailed fix instructions
+- Code examples
+- Testing requirements
+- Validation steps
+
+## Archive Structure
+
+```
+/reviews/[TARGET_NAME]/
+├── review-plan-[TARGET_NAME].md
+├── review-tasks-[TARGET_NAME].md
+├── review-report-[TARGET_NAME].md
+├── executive-summary-[TARGET_NAME].md
+└── implementation-guide-[TARGET_NAME].md
+```
+
+## Final Instructions
+
+1. Prioritize critical findings for immediate action
+2. Create trackable issues with clear acceptance criteria
+3. Provide both executive and technical documentation
+4. Archive all materials for audit trail

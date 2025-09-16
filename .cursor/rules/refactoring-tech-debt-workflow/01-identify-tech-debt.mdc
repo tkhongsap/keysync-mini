@@ -1,0 +1,63 @@
+---
+description: Identify and document technical debt in codebase
+alwaysApply: false
+---
+# Rule: Identify Technical Debt
+
+## Goal
+
+To guide an AI assistant in systematically identifying, analyzing, and documenting technical debt in a codebase for prioritized refactoring.
+
+## Process
+
+1. **Receive Analysis Target**: User specifies codebase, module, or component to analyze
+2. **Ask Clarifying Questions**: Understand focus areas and business priorities
+3. **Analyze Code Quality**: Examine code for common debt patterns
+4. **Assess Impact**: Evaluate business and technical impact of each issue
+5. **Document Findings**: Save as `tech-debt-analysis-[TARGET_NAME].md` in `/refactoring/`
+
+## Clarifying Questions (Examples)
+
+- **Focus Areas**: "What areas concern you most? (performance, maintainability, security)"
+- **Business Impact**: "Which features are most critical to the business?"
+- **Timeline**: "When do you need to address this debt?"
+- **Resources**: "What resources are available for refactoring?"
+- **Constraints**: "Any constraints we should consider? (freeze periods, dependencies)"
+
+## Technical Debt Categories
+
+Identify issues in these areas:
+
+1. **Code Quality**: Duplication, complexity, poor naming
+2. **Architecture**: Tight coupling, missing abstractions, layering violations
+3. **Performance**: Inefficient algorithms, N+1 queries, memory leaks
+4. **Security**: Vulnerabilities, outdated dependencies, exposed secrets
+5. **Testing**: Low coverage, missing tests, flaky tests
+6. **Documentation**: Outdated docs, missing API documentation
+
+## Output Structure
+
+The analysis should include:
+- Executive summary with top priorities
+- Categorized list of debt items
+- Impact assessment (high/medium/low)
+- Effort estimates for fixes
+- Recommended refactoring order
+
+## Target Audience
+
+Assume the analysis will be read by both technical leads and product managers.
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/refactoring/`
+- **Filename**: `tech-debt-analysis-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Be specific about problems and their locations
+2. Make sure to ask the user clarifying questions
+3. Provide actionable recommendations
+4. Focus on high-impact issues first
+5. Include rough effort estimates

@@ -1,0 +1,64 @@
+---
+description: Start comprehensive review process for codebase or component
+alwaysApply: false
+---
+# Rule: Initiate Code Review Process
+
+## Goal
+
+To guide an AI assistant in starting a comprehensive review process for any codebase, program component, or specific changes.
+
+## Process
+
+1. **Receive Review Target**: User provides what to review (repository, branch, files, or component)
+2. **Ask Clarifying Questions**: Understand scope, objectives, and focus areas
+3. **Generate Review Plan**: Create structured plan with clear objectives
+4. **Save Plan**: Generate `review-plan-[TARGET_NAME].md` in `/reviews/`
+
+## Clarifying Questions (Examples)
+
+- **Review Type**: "What type of review do you need?"
+  - A) Security-focused review
+  - B) Performance analysis
+  - C) Code quality assessment
+  - D) Architecture compliance
+  - E) Comprehensive (all aspects)
+
+- **Scope**: "What should be reviewed?"
+  - Recent changes only
+  - Entire codebase
+  - Specific modules
+  - Critical paths
+
+- **Priority**: "What's most important?"
+  - Finding bugs
+  - Improving performance
+  - Security vulnerabilities
+  - Code maintainability
+
+## Review Plan Structure
+
+The plan should include:
+
+1. **Objectives**: What the review aims to achieve
+2. **Scope**: What will be reviewed
+3. **Focus Areas**: Priority aspects to examine
+4. **Success Criteria**: How to measure review effectiveness
+5. **Deliverables**: Expected outputs and reports
+
+## Target Audience
+
+Assume the review will be read by developers and technical leads.
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/reviews/`
+- **Filename**: `review-plan-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Keep the review scope achievable
+2. Make sure to ask the user clarifying questions
+3. Focus on actionable findings
+4. Prioritize high-impact issues

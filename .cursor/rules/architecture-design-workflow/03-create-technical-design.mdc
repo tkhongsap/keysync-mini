@@ -1,0 +1,79 @@
+---
+description: Create detailed technical design document for implementation
+alwaysApply: false
+---
+# Rule: Create Technical Design Document
+
+## Goal
+
+To guide an AI assistant in creating a comprehensive Technical Design Document (TDD) that translates the selected architecture option into implementation-ready specifications.
+
+## Process
+
+1. **Load Selected Option**: Read chosen architecture from previous phase
+2. **Detail Components**: Specify each component's design
+3. **Define Interfaces**: Document APIs, data models, contracts
+4. **Address Concerns**: Cover security, performance, deployment
+5. **Save Design**: Generate `technical-design-[TARGET_NAME].md` in `/architecture/`
+
+## Technical Design Structure
+
+1. **System Overview**: High-level architecture recap
+2. **Component Design**: Detailed design for each component
+3. **Data Model**: Database schema, data flow, storage
+4. **API Specifications**: Endpoints, request/response formats
+5. **Security Design**: Authentication, authorization, encryption
+6. **Deployment Architecture**: Infrastructure, scaling, monitoring
+7. **Migration Strategy**: How to transition from current state
+8. **Implementation Roadmap**: Phased approach with milestones
+
+## Component Specification Template
+
+```markdown
+### Component: [Name]
+
+**Purpose**: What it does
+**Technology**: Language, framework, libraries
+**Interfaces**: 
+- Input: API endpoints or events consumed
+- Output: APIs exposed or events produced
+**Dependencies**: Other components or services
+**Data Storage**: Database tables or storage used
+**Key Algorithms**: Core logic or processing
+```
+
+## API Specification Example
+
+```markdown
+### API: [Endpoint Name]
+**Method**: POST
+**Path**: /api/v1/resource
+**Request**:
+```json
+{
+  "field1": "string",
+  "field2": number
+}
+```
+**Response**: 
+```json
+{
+  "id": "string",
+  "status": "success"
+}
+```
+**Errors**: 400, 401, 500
+```
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/architecture/`
+- **Filename**: `technical-design-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Make specifications detailed enough for implementation
+2. Include code examples where helpful
+3. Address all NFRs from requirements
+4. Provide clear success criteria

@@ -1,0 +1,53 @@
+---
+description: Analyze code components to understand testing requirements
+alwaysApply: false
+---
+# Rule: Analyze Code for Testing Requirements
+
+## Goal
+
+To guide an AI assistant in analyzing code components (functions, classes, modules, or APIs) to understand their logic and prepare for test generation.
+
+## Process
+
+1. **Receive Testing Target**: The user provides code to analyze (file path, function name, class, or API endpoint)
+2. **Ask Clarifying Questions**: Gather context about testing scope and requirements
+3. **Analyze Code Structure**: Examine the code to understand logic flow and dependencies
+4. **Identify Test Scenarios**: Map out test cases including happy paths, edge cases, and errors
+5. **Save Analysis**: Generate `test-analysis-[TARGET_NAME].md` in `/tests/` directory
+
+## Clarifying Questions (Examples)
+
+- **Test Type**: "What type of tests do you need? (unit, integration, e2e, or all)"
+- **Business Purpose**: "What is the primary business purpose of this code?"
+- **Critical Paths**: "Which code paths are most critical?"
+- **Known Issues**: "Are there any known bugs or edge cases?"
+- **Testing Framework**: "Which testing framework should be used?"
+
+## Analysis Output Structure
+
+The analysis document should include:
+
+1. **Code Overview**: Purpose and main functionality
+2. **Function/Method Inventory**: List of testable units
+3. **Input/Output Analysis**: Valid inputs, expected outputs, invalid inputs
+4. **Logic Flow**: Conditional branches, loops, state changes
+5. **Dependencies**: External services, modules, databases
+6. **Test Scenarios**: Happy path, edge cases, error conditions
+
+## Target Audience
+
+Assume the analysis will be used by developers to write comprehensive tests.
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/tests/`
+- **Filename**: `test-analysis-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Focus on understanding the code's behavior
+2. Make sure to ask the user clarifying questions
+3. Identify all testable scenarios
+4. Document findings clearly for test implementation

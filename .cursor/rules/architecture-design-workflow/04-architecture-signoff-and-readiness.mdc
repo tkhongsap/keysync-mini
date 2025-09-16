@@ -1,0 +1,84 @@
+---
+description: Facilitate stakeholder review and formal architecture approval
+alwaysApply: false
+---
+# Rule: Architecture Sign-off and Readiness
+
+## Goal
+
+To guide an AI assistant in coordinating architecture review, obtaining stakeholder sign-off, and creating Architecture Decision Records (ADRs) for key decisions.
+
+## Process
+
+1. **Prepare Review Package**: Compile all architecture documents
+2. **Conduct Reviews**: Facilitate stakeholder review sessions
+3. **Address Feedback**: Incorporate review comments
+4. **Create ADRs**: Document key architectural decisions
+5. **Obtain Sign-off**: Get formal approval from stakeholders
+6. **Save Documentation**: Store sign-off and ADRs in `/architecture/`
+
+## Review Checklist by Role
+
+### Technical Lead
+- [ ] Design meets functional requirements
+- [ ] Technical approach is sound
+- [ ] Implementation is feasible
+
+### Product Owner
+- [ ] Business objectives addressed
+- [ ] User needs satisfied
+- [ ] Timeline acceptable
+
+### Security Team
+- [ ] Security requirements met
+- [ ] Compliance addressed
+- [ ] Risk mitigation adequate
+
+### Operations
+- [ ] Deployable and maintainable
+- [ ] Monitoring and alerting planned
+- [ ] Disaster recovery considered
+
+## ADR Template
+
+Save as `/architecture/adr/adr-[YYYYMMDD]-[SHORT_TITLE].md`:
+
+```markdown
+# ADR: [Title]
+
+## Status
+Accepted/Rejected/Proposed
+
+## Context
+What prompted this decision
+
+## Decision
+What we decided to do
+
+## Consequences
+What happens as a result
+
+## Alternatives Considered
+Other options we evaluated
+```
+
+## Sign-off Document Structure
+
+1. **Architecture Summary**: Brief overview of chosen design
+2. **Review Findings**: Feedback from each stakeholder group
+3. **Risk Register**: Identified risks and mitigations
+4. **Implementation Readiness**: Prerequisites and dependencies
+5. **Approval Signatures**: Stakeholder sign-offs
+
+## Output
+
+- **Sign-off**: `architecture-signoff-[TARGET_NAME].md` in `/architecture/`
+- **ADRs**: Individual files in `/architecture/adr/`
+- **Updated Design**: Incorporate final feedback
+
+## Final Instructions
+
+1. Ensure all stakeholder concerns are addressed
+2. Document decisions with clear rationale
+3. Get explicit approval before proceeding
+4. Archive all review materials

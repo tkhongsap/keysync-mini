@@ -1,0 +1,63 @@
+---
+description: Plan and prioritize refactoring tasks based on tech debt analysis
+globs:
+  - "**/tech-debt-analysis-*.md"
+alwaysApply: false
+---
+# Rule: Plan Refactoring Tasks
+
+## Goal
+
+To guide an AI assistant in creating an actionable refactoring plan that balances business needs with technical improvements.
+
+## Process
+
+1. **Load Tech Debt Analysis**: Read from `/refactoring/tech-debt-analysis-[TARGET_NAME].md`
+2. **Prioritize Issues**: Rank by impact vs effort matrix
+3. **Create Task Breakdown**: Split large refactoring into manageable tasks
+4. **Define Success Criteria**: Set clear goals for each task
+5. **Save Plan**: Generate `refactoring-plan-[TARGET_NAME].md` in `/refactoring/`
+
+## Prioritization Framework
+
+Consider these factors:
+- **Business Impact**: How does this affect users or revenue?
+- **Risk Level**: What could break if we don't fix this?
+- **Effort Required**: How long will it take to fix?
+- **Dependencies**: What else needs to change?
+- **Quick Wins**: What can we fix easily for immediate benefit?
+
+## Refactoring Plan Structure
+
+The plan should include:
+
+1. **Executive Summary**: Key improvements and expected benefits
+2. **Phase 1 - Quick Wins**: Low effort, high impact fixes (1-2 days)
+3. **Phase 2 - Core Improvements**: Medium effort refactoring (1-2 weeks)
+4. **Phase 3 - Major Changes**: Large architectural improvements (2+ weeks)
+5. **Success Metrics**: How we'll measure improvement
+6. **Risk Mitigation**: Safety measures and rollback plans
+
+## Task Format
+
+For each refactoring task:
+- **Task Title**: Clear description of what to refactor
+- **Current State**: What's wrong now
+- **Target State**: What it should look like
+- **Implementation Steps**: How to get there
+- **Testing Strategy**: How to verify it works
+- **Estimated Effort**: Hours or days needed
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/refactoring/`
+- **Filename**: `refactoring-plan-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Start with highest impact, lowest effort tasks
+2. Group related refactoring together
+3. Include specific file and function references
+4. Provide clear acceptance criteria
+5. Consider team capacity and deadlines

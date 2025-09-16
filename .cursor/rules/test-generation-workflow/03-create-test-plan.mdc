@@ -1,0 +1,49 @@
+---
+description: Create comprehensive test plan for larger features
+alwaysApply: false
+---
+# Rule: Create Test Plan for Feature Testing
+
+## Goal
+
+To guide an AI assistant in creating a strategic test plan for larger features or systems, coordinating multiple test types and defining success criteria.
+
+## Process
+
+1. **Gather Requirements**: Review feature requirements and specifications
+2. **Define Test Scope**: Determine what needs testing and at what level
+3. **Plan Test Phases**: Organize testing into logical phases
+4. **Allocate Resources**: Identify tools, environments, and timeline
+5. **Create Test Plan**: Generate `test-plan-[FEATURE_NAME].md` in `/tests/`
+
+## Test Plan Structure
+
+The test plan should include:
+
+1. **Overview**: Feature description and testing objectives
+2. **Scope**: What will and won't be tested
+3. **Test Types**: Unit, integration, e2e, performance, security
+4. **Test Schedule**: Phases and timeline
+5. **Success Criteria**: Coverage targets, performance benchmarks
+6. **Risk Assessment**: Critical areas and mitigation strategies
+
+## Key Considerations
+
+- **Test Priorities**: Focus on critical user paths first
+- **Resource Planning**: Consider team capacity and deadlines
+- **Environment Needs**: Development, staging, production-like
+- **Data Requirements**: Test data, fixtures, mocks
+- **Automation Strategy**: What can be automated vs manual
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/tests/`
+- **Filename**: `test-plan-[FEATURE_NAME].md`
+
+## Final Instructions
+
+1. Keep the plan practical and achievable
+2. Focus on risk-based testing approach
+3. Include clear success metrics
+4. Provide actionable next steps

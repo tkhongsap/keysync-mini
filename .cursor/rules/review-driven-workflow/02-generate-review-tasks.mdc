@@ -1,0 +1,63 @@
+---
+description: Convert review plan into detailed actionable tasks
+globs:
+  - "**/review-plan-*.md"
+alwaysApply: false
+---
+# Rule: Generate Review Tasks from Plan
+
+## Goal
+
+To guide an AI assistant in converting a review plan into detailed, actionable review tasks that can be systematically executed.
+
+## Process
+
+1. **Load Review Plan**: Read from `/reviews/review-plan-[TARGET_NAME].md`
+2. **Assess Codebase**: Understand structure and identify key areas
+3. **Generate Parent Tasks**: Create high-level review tasks (Phase 1)
+4. **Wait for Confirmation**: Pause for user "Go" signal
+5. **Generate Sub-Tasks**: Break down into specific review actions (Phase 2)
+6. **Save Task List**: Generate `review-tasks-[TARGET_NAME].md` in `/reviews/`
+
+## Interaction Model
+
+The process requires a pause after generating parent tasks:
+- Present high-level tasks first
+- Wait for user to respond with "Go"
+- Then generate detailed sub-tasks
+
+## Task Structure
+
+```markdown
+## Relevant Files
+- `path/to/file.ts` - Component to review
+- `path/to/api.py` - API endpoints to analyze
+
+## Tasks
+- [ ] 1.0 Review Authentication Logic
+  - [ ] 1.1 Check password handling
+  - [ ] 1.2 Verify token generation
+- [ ] 2.0 Analyze Performance
+  - [ ] 2.1 Review database queries
+  - [ ] 2.2 Check caching implementation
+```
+
+## Key Considerations
+
+- Map tasks to review objectives
+- Include appropriate specialist reviewers (@code-reviewer, @security-reviewer)
+- Order tasks by priority and dependencies
+- Keep sub-tasks focused and measurable
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/reviews/`
+- **Filename**: `review-tasks-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Generate actionable, specific tasks
+2. Include file references for each task
+3. Maintain two-phase generation with user checkpoint
+4. Focus on high-impact areas first

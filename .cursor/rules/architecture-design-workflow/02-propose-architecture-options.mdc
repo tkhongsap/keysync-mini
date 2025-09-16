@@ -1,0 +1,76 @@
+---
+description: Generate and compare viable architecture alternatives
+alwaysApply: false
+---
+# Rule: Propose Architecture Options
+
+## Goal
+
+To guide an AI assistant in generating multiple architecture options based on requirements and helping stakeholders make informed decisions through comparative analysis.
+
+## Process
+
+1. **Load Requirements**: Read from `/architecture/architecture-requirements-[TARGET_NAME].md`
+2. **Generate Options**: Create 2-3 distinct architecture approaches
+3. **Create Diagrams**: Develop visual representations for each option
+4. **Compare Trade-offs**: Analyze pros, cons, and trade-offs
+5. **Save Options**: Generate `architecture-options-[TARGET_NAME].md` in `/architecture/`
+
+## Architecture Option Template
+
+For each option include:
+
+```markdown
+## Option [N]: [Descriptive Name]
+
+### Overview
+Brief description of the approach
+
+### Architecture Diagram
+[C4 Context/Container diagram or similar]
+
+### Key Components
+- Component A: Purpose and technology
+- Component B: Purpose and technology
+
+### Pros
+- Advantage 1
+- Advantage 2
+
+### Cons
+- Disadvantage 1
+- Disadvantage 2
+
+### Best For
+Scenarios where this option excels
+```
+
+## Comparison Matrix
+
+Create a comparison table:
+| Criteria | Option 1 | Option 2 | Option 3 |
+|----------|----------|----------|----------|
+| Complexity | Low | Medium | High |
+| Cost | $$ | $$$ | $ |
+| Scalability | Good | Excellent | Fair |
+| Time to Market | Fast | Medium | Slow |
+
+## Key Considerations
+
+- Vary optimization focus (cost vs performance vs simplicity)
+- Consider different deployment models (monolith, microservices, serverless)
+- Include rough cost and timeline estimates
+- Address key NFRs from requirements
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/architecture/`
+- **Filename**: `architecture-options-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Make options genuinely different, not variations
+2. Keep descriptions concise but complete
+3. Use visuals to clarify complex concepts
+4. Provide clear recommendation with rationale

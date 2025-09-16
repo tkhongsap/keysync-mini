@@ -1,0 +1,62 @@
+---
+description: Define comprehensive architecture requirements for system design
+alwaysApply: false
+---
+# Rule: Define Architecture Requirements
+
+## Goal
+
+To guide an AI assistant in gathering and documenting comprehensive architecture requirements including business context, technical constraints, and non-functional requirements.
+
+## Process
+
+1. **Receive Design Context**: User provides system or feature to architect
+2. **Ask Clarifying Questions**: Gather business and technical requirements
+3. **Document Requirements**: Capture NFRs, constraints, and priorities
+4. **Validate Completeness**: Ensure all aspects are covered
+5. **Save Requirements**: Generate `architecture-requirements-[TARGET_NAME].md` in `/architecture/`
+
+## Clarifying Questions (Examples)
+
+**Business Context:**
+- What problem does this system solve?
+- Who are the primary users?
+- What are the key business objectives?
+
+**Non-Functional Requirements:**
+- Expected user load and growth?
+- Performance requirements (response time, throughput)?
+- Availability targets (99.9%, 99.99%)?
+- Security and compliance needs?
+
+**Technical Context:**
+- Existing systems to integrate with?
+- Technology constraints or preferences?
+- Team skills and experience?
+- Budget and timeline constraints?
+
+## Requirements Document Structure
+
+1. **Context & Objectives**: Business goals and success metrics
+2. **Functional Requirements**: Core capabilities needed
+3. **Non-Functional Requirements**: Performance, security, scalability
+4. **Domain & Data**: Data models and business rules
+5. **Constraints**: Technical, organizational, regulatory
+6. **Risks & Assumptions**: Key risks and planning assumptions
+
+## Target Audience
+
+Requirements will be used by architects, developers, and stakeholders.
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/architecture/`
+- **Filename**: `architecture-requirements-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Make requirements measurable and specific
+2. Prioritize requirements (must-have vs nice-to-have)
+3. Include acceptance criteria
+4. Document assumptions explicitly

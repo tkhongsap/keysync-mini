@@ -1,0 +1,59 @@
+---
+description: Execute test suites and maintain test quality
+globs:
+  - "**/*.test.*"
+  - "**/*_test.*"
+  - "**/test_*.*"
+alwaysApply: false
+---
+# Rule: Execute and Maintain Tests
+
+## Goal
+
+To guide an AI assistant in executing test suites, analyzing results, and maintaining test quality over time.
+
+## Process
+
+1. **Run Test Suite**: Execute tests using appropriate test runner
+2. **Analyze Results**: Review pass/fail status and coverage reports
+3. **Identify Issues**: Find failing tests, flaky tests, or gaps
+4. **Fix Problems**: Update tests or code to resolve issues
+5. **Document Results**: Record test execution outcomes and metrics
+
+## Test Execution Commands
+
+Common test execution patterns:
+- **JavaScript/Node**: `npm test`, `jest`, `mocha`
+- **Python**: `pytest`, `python -m unittest`
+- **Java**: `mvn test`, `gradle test`
+- **Ruby**: `rspec`, `rake test`
+
+## Maintenance Activities
+
+- **Fix Failing Tests**: Investigate and resolve test failures
+- **Update Outdated Tests**: Adjust tests when requirements change
+- **Improve Flaky Tests**: Stabilize intermittent failures
+- **Increase Coverage**: Add tests for uncovered code paths
+- **Optimize Performance**: Speed up slow-running tests
+
+## Quality Metrics
+
+Track these metrics:
+- Test pass rate
+- Code coverage percentage
+- Test execution time
+- Flaky test frequency
+- Time to fix failing tests
+
+## Output
+
+- **Test Reports**: Store in `/test-reports/` or CI/CD artifacts
+- **Coverage Reports**: Generate HTML or JSON coverage summaries
+- **Metrics Dashboard**: Track trends over time
+
+## Final Instructions
+
+1. Run tests regularly (on commit, daily, before release)
+2. Keep test suite fast and reliable
+3. Fix broken tests immediately
+4. Monitor and improve coverage continuously

@@ -1,0 +1,108 @@
+---
+description: Process and manage task lists for PRD implementation with continuous execution
+globs:
+  - "**/tasks/tasks-continuous-*.md"
+  - "**/tasks-auto-*.md"
+alwaysApply: false
+---
+# Continuous Task List Management
+
+Guidelines for managing task lists in markdown files to track progress on completing a PRD with automatic continuous execution.
+
+## Task Implementation (Continuous Mode)
+- **Continuous execution:** Execute all sub-tasks sequentially without waiting for user permission between tasks
+- **Batch completion protocol:**  
+  1. Work through **all sub-tasks** under a parent task continuously
+  2. Mark each sub-task as completed by changing `[ ]` to `[x]` as you finish it
+  3. When **all** subtasks underneath a parent task are completed, follow this sequence:
+    - **First**: Run the full test suite (`pytest`, `npm test`, `bin/rails test`, etc.)
+    - **Only if all tests pass**: Stage changes (`git add .`)
+    - **Clean up**: Remove any temporary files and temporary code before committing
+    - **Commit**: Use a descriptive commit message that:
+      - Uses conventional commit format (`feat:`, `fix:`, `refactor:`, etc.)
+      - Summarizes what was accomplished in the parent task
+      - Lists key changes and additions
+      - References the task number and PRD context
+      - **Formats the message as a single-line command using `-m` flags**, e.g.:
+
+        ```
+        git commit -m "feat: add payment validation logic" -m "- Validates card type and expiry" -m "- Adds unit tests for edge cases" -m "Related to T123 in PRD"
+        ```
+  4. Mark the **parent task** as completed (`[x]`)
+  5. **Continue immediately** to the next parent task without stopping
+- **Only stop execution when:**
+  - All tasks in the file are completed
+  - A critical error occurs that prevents continuation
+  - Tests fail and cannot be automatically resolved
+  - User explicitly requests to stop
+
+## Continuous Execution Strategy
+1. **Analyze the entire task list** before starting to understand dependencies
+2. **Execute tasks in logical order** respecting dependencies between tasks
+3. **Handle errors gracefully:**
+   - If a sub-task fails, attempt to resolve automatically
+   - If resolution fails, document the issue and continue with other tasks
+   - Only stop if the failure blocks all remaining work
+4. **Provide progress updates** by updating the task list file regularly
+5. **Maintain momentum** by working through tasks systematically without interruption
+
+## Task List Maintenance
+
+1. **Update the task list continuously:**
+   - Mark tasks and subtasks as completed (`[x]`) immediately upon completion
+   - Add new tasks as they emerge during implementation
+   - Update task descriptions if scope changes during execution
+
+2. **Maintain the "Relevant Files" section:**
+   - List every file created or modified in real-time
+   - Give each file a one‑line description of its purpose
+   - Update descriptions as files evolve
+
+3. **Track progress metrics:**
+   - Add timestamps for task completion
+   - Note any blockers or issues encountered
+   - Document decisions made during implementation
+
+## AI Instructions
+
+When working with continuous task lists, the AI must:
+
+1. **Execute systematically:**
+   - Work through all sub-tasks under a parent task before moving to the next parent
+   - Update the task list file after each sub-task completion
+   - Commit changes only after completing entire parent tasks
+
+2. **Maintain quality:**
+   - Run tests after each parent task completion
+   - Ensure code quality standards are met
+   - Clean up temporary files and code before commits
+
+3. **Handle dependencies:**
+   - Identify task dependencies before starting
+   - Execute tasks in logical order
+   - Skip tasks that depend on blocked items, return to them later
+
+4. **Provide visibility:**
+   - Update task status immediately upon completion
+   - Add newly discovered tasks to the list
+   - Keep "Relevant Files" section current
+   - Document any issues or blockers encountered
+
+5. **Error handling:**
+   - Attempt automatic resolution of common issues
+   - Document unresolvable problems
+   - Continue with other tasks when possible
+   - Only stop execution for critical blockers
+
+6. **Completion criteria:**
+   - All tasks marked as `[x]`
+   - All tests passing
+   - All changes committed with proper messages
+   - Documentation updated as needed
+
+## Usage Notes
+
+- **File naming:** Use `tasks-continuous-*.md` or `tasks-auto-*.md` to trigger this rule
+- **Monitoring:** Check task list file regularly to track progress
+- **Intervention:** User can stop execution by modifying the task file or providing explicit instruction
+- **Quality assurance:** Tests must pass before parent task completion, ensuring quality is maintained despite continuous execution

@@ -1,0 +1,74 @@
+---
+description: Execute review tasks and generate comprehensive analysis
+globs:
+  - "**/review-tasks-*.md"
+alwaysApply: false
+---
+# Rule: Execute Review Process
+
+## Goal
+
+To guide an AI assistant in executing review tasks systematically, leveraging specialist reviewers and documenting findings comprehensively.
+
+## Process
+
+1. **Load Review Tasks**: Read from `/reviews/review-tasks-[TARGET_NAME].md`
+2. **Execute One Sub-Task**: Process tasks one at a time
+3. **Leverage Specialists**: Use appropriate reviewers (@code-reviewer, @security-reviewer, etc.)
+4. **Document Findings**: Record issues with evidence and recommendations
+5. **Update Progress**: Mark tasks complete and pause for user confirmation
+6. **Generate Report**: Save findings in `review-report-[TARGET_NAME].md`
+
+## Task Execution Protocol
+
+**One sub-task at a time:**
+1. Select next uncompleted sub-task
+2. Perform the review analysis
+3. Document findings with file references and line numbers
+4. Mark sub-task as complete `[x]`
+5. Pause and wait for user approval before continuing
+6. When all sub-tasks under a parent are complete, mark parent `[x]`
+
+## Finding Documentation Format
+
+For each finding:
+```markdown
+### [SEVERITY]: [Issue Title]
+**File**: `[FILE_PATH]` (Line [LINE_NUM])
+**Category**: Security/Performance/Quality/Architecture
+
+**Description**: 
+What the issue is and why it matters
+
+**Recommendation**:
+How to fix it
+
+**Example**:
+```code
+// Current problematic code
+```
+```code
+// Suggested improvement
+```
+```
+
+## Severity Classifications
+
+- **CRITICAL**: Security vulnerabilities, data loss risks
+- **HIGH**: Performance issues, bugs affecting functionality
+- **MEDIUM**: Code quality issues, maintainability concerns
+- **LOW**: Style issues, minor improvements
+
+## Output
+
+- **Format**: Markdown (`.md`)
+- **Location**: `/reviews/`
+- **Filename**: `review-report-[TARGET_NAME].md`
+
+## Final Instructions
+
+1. Process one sub-task at a time with user approval
+2. Provide specific evidence for each finding
+3. Include actionable recommendations
+4. Maintain task list accuracy
+5. Focus on high-impact issues

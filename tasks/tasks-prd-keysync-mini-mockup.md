@@ -11,7 +11,7 @@
 ### Phase 1: Foundation
 - [ ] 1.0 Set up project infrastructure and dependencies
   - [ ] 1.1 Create directory structure (/input, /output, /src, /tests, /data)
-  - [ ] 1.2 Create requirements.txt (PyYAML, pandas, pytest, click)
+  - [ ] 1.2 Create requirements.txt (PyYAML, pandas, pytest, click for CLI interface)
   - [ ] 1.3 Initialize SQLite schema for state management
   - [ ] 1.4 Set up logging configuration
   - [ ] 1.5 Create run.sh script
@@ -22,7 +22,7 @@
   - [ ] 2.2 Implement configurable test scenarios (normal/drift/failure/recovery) (FR15)
   - [ ] 2.3 Generate temporal patterns with last_seen_at timestamps (FR11)
   - [ ] 2.4 Create realistic business key patterns (CUST-, PROD-, TXN-)
-  - [ ] 2.5 Implement controlled discrepancy injection
+  - [ ] 2.5 Implement controlled discrepancy injection (default: 80% match, 10% missing in A, 10% missing from systems)
   - [ ] 2.6 Add duplicate key generation for testing
 
 ### Phase 3: Core Processing Engine
@@ -43,16 +43,16 @@
 
 ### Phase 5: Reporting & Audit
 - [ ] 5.0 Create report generation and output management
-  - [ ] 5.1 Generate reconciliation_summary.csv (FR6)
-  - [ ] 5.2 Create diff_missing_in_A.csv with master key proposals (FR6)
-  - [ ] 5.3 Generate diff_missing_from_system.csv (FR6)
-  - [ ] 5.4 Build master_key_registry.csv management (FR6, FR9)
-  - [ ] 5.5 Implement comprehensive audit_log.csv (FR6, FR10)
-  - [ ] 5.6 Add trend analysis reporting
+  - [ ] 5.1 Generate reconciliation_summary.csv with ISO 8601 timestamps and summary statistics (FR6)
+  - [ ] 5.2 Create diff_missing_in_A.csv with master key proposals, ISO 8601 timestamps, and clear headers (FR6)
+  - [ ] 5.3 Generate diff_missing_from_system.csv with ISO 8601 timestamps and clear column headers (FR6)
+  - [ ] 5.4 Build master_key_registry.csv management with ISO 8601 timestamps for creation/updates (FR6, FR9)
+  - [ ] 5.5 Implement comprehensive audit_log.csv with ISO 8601 timestamps and detailed run history (FR6, FR10)
+  - [ ] 5.6 Add trend analysis reporting (optional: track discrepancy rates over time, key lifecycle patterns)
 
 ### Phase 6: State & Configuration
 - [ ] 6.0 Implement configuration and state management
-  - [ ] 6.1 Create YAML configuration loader (FR7)
+  - [ ] 6.1 Create YAML configuration loader supporting schedule, normalize rules, provisioning strategies, sources, simulation (seed, scenario, temporal, failures), and processing options (mode, batch_size, parallel, checkpoint_interval) (FR7)
   - [ ] 6.2 Build SQLite-based state persistence (FR9, FR11)
   - [ ] 6.3 Implement checkpoint/resume capability (Technical Spec)
   - [ ] 6.4 Track historical runs and key lifecycle (FR11)

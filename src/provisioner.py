@@ -1,7 +1,7 @@
 """Master key provisioning module for KeySync Mini."""
 
 import logging
-from typing import Dict, List, Set, Any, Optional
+from typing import Dict, List, Set, Any, Optional, Tuple
 from datetime import datetime
 from database import Database
 

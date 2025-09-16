@@ -1,32 +1,32 @@
 {
-  "scenario": "normal",
-  "seed": 42,
-  "timestamp": "2025-09-16T21:01:52.857300",
+  "scenario": "recovery",
+  "seed": 300,
+  "timestamp": "2025-09-16T21:26:48.642255",
   "systems": {
     "A": {
-      "total_records": 90,
-      "unique_keys": 85,
-      "duplicates": 5
+      "total_records": 893,
+      "unique_keys": 782,
+      "duplicates": 111
     },
     "B": {
-      "total_records": 82,
-      "unique_keys": 73,
-      "duplicates": 9
+      "total_records": 765,
+      "unique_keys": 699,
+      "duplicates": 66
     },
     "C": {
-      "total_records": 84,
-      "unique_keys": 76,
-      "duplicates": 8
+      "total_records": 796,
+      "unique_keys": 695,
+      "duplicates": 101
     },
     "D": {
-      "total_records": 80,
-      "unique_keys": 71,
-      "duplicates": 9
+      "total_records": 876,
+      "unique_keys": 767,
+      "duplicates": 109
     },
     "E": {
-      "total_records": 89,
-      "unique_keys": 83,
-      "duplicates": 6
+      "total_records": 879,
+      "unique_keys": 767,
+      "duplicates": 112
     }
   }
 }

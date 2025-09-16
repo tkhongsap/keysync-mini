@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-import pandas as pd
+# import pandas as pd  # Not used
 
 from database import Database
 

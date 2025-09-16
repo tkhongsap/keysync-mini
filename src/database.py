@@ -126,20 +126,34 @@ class Database:
     def complete_run(self, run_id: int, stats: Dict[str, Any], error: Optional[str] = None):
         """Mark a run as completed or failed."""
         status = 'failed' if error else 'completed'
+        # Convert sets to lists for JSON serialization
+        serializable_stats = self._make_json_serializable(stats)
         self.conn.execute("""
             UPDATE reconciliation_runs
             SET status = ?, stats_json = ?, error_message = ?, completed_at = CURRENT_TIMESTAMP
             WHERE run_id = ?
-        """, (status, json.dumps(stats), error, run_id))
+        """, (status, json.dumps(serializable_stats), error, run_id))
         self.conn.commit()
+
+    def _make_json_serializable(self, obj: Any) -> Any:
+        """Convert non-serializable objects (like sets) to JSON-serializable format."""
+        if isinstance(obj, set):
+            return list(obj)
+        elif isinstance(obj, dict):
+            return {k: self._make_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self._make_json_serializable(item) for item in obj]
+        return obj
 
     def save_checkpoint(self, run_id: int, checkpoint_data: Dict[str, Any]):
         """Save checkpoint data for recovery."""
+        # Convert sets to lists for JSON serialization
+        serializable_data = self._make_json_serializable(checkpoint_data)
         self.conn.execute("""
             UPDATE reconciliation_runs
             SET checkpoint_data = ?
             WHERE run_id = ?
-        """, (json.dumps(checkpoint_data), run_id))
+        """, (json.dumps(serializable_data), run_id))
         self.conn.commit()
 
     def get_last_successful_run(self) -> Optional[Dict[str, Any]]:

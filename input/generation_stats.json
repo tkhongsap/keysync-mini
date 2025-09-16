@@ -1,0 +1,32 @@
+{
+  "scenario": "normal",
+  "seed": 42,
+  "timestamp": "2025-09-16T21:01:52.857300",
+  "systems": {
+    "A": {
+      "total_records": 90,
+      "unique_keys": 85,
+      "duplicates": 5
+    },
+    "B": {
+      "total_records": 82,
+      "unique_keys": 73,
+      "duplicates": 9
+    },
+    "C": {
+      "total_records": 84,
+      "unique_keys": 76,
+      "duplicates": 8
+    },
+    "D": {
+      "total_records": 80,
+      "unique_keys": 71,
+      "duplicates": 9
+    },
+    "E": {
+      "total_records": 89,
+      "unique_keys": 83,
+      "duplicates": 6
+    }
+  }
+}

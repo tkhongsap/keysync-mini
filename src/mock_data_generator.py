@@ -52,7 +52,8 @@ class MockDataGenerator:
 
     def generate_temporal_pattern(self, days_history: int = 30) -> str:
         """Generate last_seen_at timestamp for temporal tracking."""
-        base_time = datetime.now()
+        # Use a fixed base time for reproducibility when seed is set
+        base_time = datetime(2025, 1, 1, 12, 0, 0)
         days_ago = random.randint(0, days_history)
         hours_ago = random.randint(0, 23)
         timestamp = base_time - timedelta(days=days_ago, hours=hours_ago)
@@ -270,7 +271,7 @@ class MockDataGenerator:
         stats = {
             'scenario': scenario,
             'seed': self.seed,
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': datetime(2025, 1, 1, 12, 0, 0).isoformat(),
             'systems': {}
         }
 

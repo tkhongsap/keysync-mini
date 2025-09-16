@@ -4,7 +4,7 @@ import sqlite3
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 import json
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,9 @@ class Database:
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.execute("PRAGMA journal_mode = WAL")
+        self.conn.execute("PRAGMA synchronous = NORMAL")  # Faster writes
+        self.conn.execute("PRAGMA cache_size = 10000")     # Larger cache
+        self.conn.execute("PRAGMA temp_store = MEMORY")    # Use memory for temp tables
 
     def _init_schema(self):
         """Initialize database schema."""
@@ -196,6 +199,17 @@ class Database:
             DO UPDATE SET last_seen_at = CURRENT_TIMESTAMP, run_id = ?
         """, (system_name, key_value, normalized_key, run_id, run_id))
 
+    def track_keys_batch(self, run_id: int, keys_data: List[Tuple[str, str, str]]):
+        """Track multiple keys in a single batch operation for better performance."""
+        self.conn.executemany("""
+            INSERT INTO key_tracking (system_name, key_value, normalized_key, run_id, last_seen_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(system_name, normalized_key)
+            DO UPDATE SET last_seen_at = CURRENT_TIMESTAMP, run_id = ?
+        """, [(system, key, norm_key, run_id, run_id)
+              for system, key, norm_key in keys_data])
+        # Don't commit here - let the caller decide when to commit
+
     def log_event(self, run_id: int, event_type: str, event_details: str,
                   system_name: Optional[str] = None, key_value: Optional[str] = None,
                   action_taken: Optional[str] = None, result: Optional[str] = None):
@@ -218,6 +232,11 @@ class Database:
 
         cursor = self.conn.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
+
+    def commit(self):
+        """Commit the current transaction."""
+        if self.conn:
+            self.conn.commit()
 
     def close(self):
         """Close database connection."""

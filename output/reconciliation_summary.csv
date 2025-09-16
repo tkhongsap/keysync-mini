@@ -1,16 +1,11 @@
 Metric,Value,Timestamp
-Run ID,3,2025-09-16T21:26:56.944529
-Total Unique Keys,988,2025-09-16T21:26:56.944562
-Keys in System A,780,2025-09-16T21:26:56.944569
-Keys Only in A (Propagation Gaps),117,2025-09-16T21:26:56.944575
-Keys Missing in A (Out of Authority),208,2025-09-16T21:26:56.944579
-Keys in All Systems,356,2025-09-16T21:26:56.944584
-Overall Match Rate,36.0%,2025-09-16T21:26:56.944609
-Total Out of Authority Keys,208,2025-09-16T21:26:56.944615
-Total Propagation Gaps,859,2025-09-16T21:26:56.944619
-Total Duplicate Groups,5,2025-09-16T21:26:56.944624
-Keys in System A,780,2025-09-16T21:26:56.944648
-Keys in System B,697,2025-09-16T21:26:56.944658
-Keys in System C,693,2025-09-16T21:26:56.944664
-Keys in System D,764,2025-09-16T21:26:56.944667
-Keys in System E,765,2025-09-16T21:26:56.944671
+Run ID,1,2025-09-16T21:59:18.815849
+Total Unique Keys,0,2025-09-16T21:59:18.815858
+Keys in System A,0,2025-09-16T21:59:18.815861
+Keys Only in A (Propagation Gaps),0,2025-09-16T21:59:18.815864
+Keys Missing in A (Out of Authority),0,2025-09-16T21:59:18.815867
+Keys in All Systems,0,2025-09-16T21:59:18.815869
+Overall Match Rate,0.0%,2025-09-16T21:59:18.815938
+Total Out of Authority Keys,0,2025-09-16T21:59:18.815951
+Total Propagation Gaps,0,2025-09-16T21:59:18.815954
+Total Duplicate Groups,0,2025-09-16T21:59:18.815956

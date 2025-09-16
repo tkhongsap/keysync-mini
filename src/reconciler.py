@@ -103,8 +103,10 @@ class Reconciler:
             # Save checkpoint
             self.save_checkpoint('discrepancy_analysis_complete', discrepancies)
 
-            # Step 3: Track keys for temporal analysis
-            self.track_keys(comparison_results)
+            # Step 3: Track keys for temporal analysis (skip in dry-run for performance)
+            execution_mode = self.config.get('execution_mode', 'normal')
+            if execution_mode != 'dry-run':
+                self.track_keys(comparison_results)
 
             # Step 4: Provision master keys for out-of-authority keys
             if discrepancies['out_of_authority_keys']:
@@ -148,6 +150,8 @@ class Reconciler:
             )
             raise
 
+        # Commit all database changes at once for better performance
+        self.db.commit()
         return results
 
     def analyze_discrepancies(self, comparison_results: Dict[str, Any]) -> Dict[str, Any]:
@@ -209,15 +213,16 @@ class Reconciler:
         """Track keys in database for temporal analysis."""
         system_keys = comparison_results.get('system_keys', {})
 
+        # Collect all keys for batch insertion
+        keys_batch = []
         for system_name, norm_map in system_keys.items():
             for normalized_key, original_keys in norm_map.items():
                 for orig_key in original_keys:
-                    self.db.track_key(
-                        run_id=self.run_id,
-                        system_name=system_name,
-                        key_value=orig_key,
-                        normalized_key=normalized_key
-                    )
+                    keys_batch.append((system_name, orig_key, normalized_key))
+
+        # Use batch insertion for better performance
+        if keys_batch:
+            self.db.track_keys_batch(self.run_id, keys_batch)
 
         logger.info(f"Tracked {sum(len(m) for m in system_keys.values())} keys for temporal analysis")
 

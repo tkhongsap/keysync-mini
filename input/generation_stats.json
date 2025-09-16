@@ -1,32 +1,32 @@
 {
-  "scenario": "recovery",
-  "seed": 300,
-  "timestamp": "2025-09-16T21:26:48.642255",
+  "scenario": "normal",
+  "seed": 42,
+  "timestamp": "2025-01-01T12:00:00",
   "systems": {
     "A": {
-      "total_records": 893,
-      "unique_keys": 782,
-      "duplicates": 111
+      "total_records": 452,
+      "unique_keys": 407,
+      "duplicates": 45
     },
     "B": {
-      "total_records": 765,
-      "unique_keys": 699,
-      "duplicates": 66
+      "total_records": 454,
+      "unique_keys": 396,
+      "duplicates": 58
     },
     "C": {
-      "total_records": 796,
-      "unique_keys": 695,
-      "duplicates": 101
+      "total_records": 450,
+      "unique_keys": 394,
+      "duplicates": 56
     },
     "D": {
-      "total_records": 876,
-      "unique_keys": 767,
-      "duplicates": 109
+      "total_records": 446,
+      "unique_keys": 381,
+      "duplicates": 65
     },
     "E": {
-      "total_records": 879,
-      "unique_keys": 767,
-      "duplicates": 112
+      "total_records": 439,
+      "unique_keys": 388,
+      "duplicates": 51
     }
   }
 }

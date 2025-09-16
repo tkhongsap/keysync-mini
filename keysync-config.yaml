@@ -1,84 +1,15 @@
-# KeySync Mini Configuration File
-
-# Scheduling (for reference - not implemented in mockup)
-schedule: "0 2 * * *"
-
-# Normalization rules
 normalize:
-  uppercase: true
-  trim_whitespace: true
-  strip_non_alnum: true
+  uppercase: false
+  strip_non_alnum: false
   collapse_delims: "-"
-  left_pad_numbers: true
+  left_pad_numbers: false
   pad_length: 6
+  trim_whitespace: true
 
-# Master key provisioning
 provisioning:
-  strategy: "mirror"  # Options: mirror, namespaced
+  strategy: "namespaced"
   auto_approve: false
-  namespace_prefix: "MASTER"
 
-# Data sources
-sources:
-  A:
-    type: "csv"
-    path: "./input/A.csv"
-  B:
-    type: "csv"
-    path: "./input/B.csv"
-  C:
-    type: "csv"
-    path: "./input/C.csv"
-  D:
-    type: "csv"
-    path: "./input/D.csv"
-  E:
-    type: "csv"
-    path: "./input/E.csv"
-
-# Simulation settings for mock data generation
 simulation:
-  seed: 42  # For reproducible runs
-  scenario: "normal"  # Options: normal, drift, failure, recovery
-  keys_per_system: 1000
-  temporal:
-    simulate_history: true
-    days_of_history: 30
-  failures:
-    inject_corruption: 0.01  # 1% chance
-    simulate_timeout: false
-
-# Processing configuration
-processing:
-  mode: "full"  # Options: full, incremental
-  batch_size: 1000
-  parallel: true
-  checkpoint_interval: 5000
-  max_workers: 5
-
-# Output settings
-output:
-  directory: "./output"
-  format: "csv"
-  include_timestamps: true
-  generate_trend_analysis: false
-
-# Database settings
-database:
-  path: "./data/keysync.db"
-  backup_enabled: true
-  backup_count: 5
-
-# Logging configuration
-logging:
-  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
-  file: "./logs/keysync.log"
-  max_size_mb: 10
-  backup_count: 5
-
-# Error handling
-error_handling:
-  on_missing_file: "skip"  # Options: skip, fail
-  on_corrupt_data: "log"   # Options: log, fail, skip
-  retry_attempts: 3
-  retry_delay_seconds: 5
+  seed: 42
+  scenario: "normal"

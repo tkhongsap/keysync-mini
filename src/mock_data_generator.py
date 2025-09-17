@@ -5,7 +5,7 @@ import csv
 import json
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Dict, Set, Tuple, Optional
+from typing import Any, List, Dict, Set, Tuple, Optional, Union
 import logging
 
 logger = logging.getLogger(__name__)
@@ -220,9 +220,12 @@ class MockDataGenerator:
     def write_csv_files(
         self,
         system_data: Dict[str, List[Dict[str, str]]],
-        output_dir: str = 'input'
-    ):
-        """Write system data to CSV files."""
+        output_dir: str = 'input',
+        write_stats: bool = True,
+        scenario: Optional[str] = None,
+        timestamp: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Write system data to CSV files and optionally emit stats."""
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
@@ -241,38 +244,93 @@ class MockDataGenerator:
                 open(file_path, 'w').close()
                 logger.info(f"Created empty file at {file_path}")
 
+        if write_stats:
+            stats = self._build_generation_stats(
+                system_data,
+                scenario=scenario or 'unspecified',
+                timestamp=timestamp
+            )
+            stats_file = output_path / 'generation_stats.json'
+            self._write_stats_file(stats, stats_file)
+            return stats
+
+        return None
+
     def generate_test_data(
         self,
         scenario: str = 'normal',
         keys_per_system: int = 1000,
         output_dir: str = 'input',
-        inject_failures: bool = False
-    ):
+        inject_failures: Union[bool, float] = 0.0,
+        corruption_rate: float = 0.01
+    ) -> Dict[str, Any]:
         """Main method to generate test data."""
         logger.info(f"Generating test data: scenario={scenario}, keys_per_system={keys_per_system}")
 
         # Generate base data
         system_data = self.generate_keys_for_scenario(
             scenario=scenario,
-            keys_per_system=keys_per_system
+            keys_per_system=keys_per_system,
+            corruption_rate=corruption_rate
         )
 
         # Optionally inject failures
-        if inject_failures:
-            failure_types = ['corruption', 'missing_file', 'massive_duplication']
-            failure_type = random.choice(failure_types)
-            logger.info(f"Injecting failure type: {failure_type}")
-            system_data = self.inject_failures(system_data, failure_type)
+        if isinstance(inject_failures, bool):
+            failure_chance = 1.0 if inject_failures else 0.0
+        else:
+            try:
+                failure_chance = float(inject_failures)
+            except (TypeError, ValueError):
+                logger.warning(
+                    "Invalid failure injection value %r; defaulting to 0", inject_failures
+                )
+                failure_chance = 0.0
+            failure_chance = max(0.0, min(1.0, failure_chance))
+
+        if failure_chance > 0:
+            roll = random.random()
+            logger.debug(
+                "Failure injection check: chance=%.3f roll=%.3f", failure_chance, roll
+            )
+            if roll < failure_chance:
+                failure_types = ['corruption', 'missing_file', 'massive_duplication']
+                failure_type = random.choice(failure_types)
+                logger.info(
+                    "Injecting failure type: %s (chance %.2f%%)",
+                    failure_type,
+                    failure_chance * 100,
+                )
+                system_data = self.inject_failures(system_data, failure_type)
 
         # Write to CSV files
-        self.write_csv_files(system_data, output_dir)
+        self.write_csv_files(system_data, output_dir, write_stats=False)
 
         # Generate summary statistics
+        stats = self._build_generation_stats(
+            system_data,
+            scenario=scenario,
+            timestamp=datetime(2025, 1, 1, 12, 0, 0).isoformat(),
+        )
+
+        # Write stats file
+        stats_file = Path(output_dir) / 'generation_stats.json'
+        self._write_stats_file(stats, stats_file)
+
+        logger.info(f"Data generation complete. Stats written to {stats_file}")
+        return stats
+
+    def _build_generation_stats(
+        self,
+        system_data: Dict[str, List[Dict[str, str]]],
+        scenario: str,
+        timestamp: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Construct the generation statistics payload."""
         stats = {
             'scenario': scenario,
             'seed': self.seed,
-            'timestamp': datetime(2025, 1, 1, 12, 0, 0).isoformat(),
-            'systems': {}
+            'timestamp': timestamp or datetime(2025, 1, 1, 12, 0, 0).isoformat(),
+            'systems': {},
         }
 
         for system, records in system_data.items():
@@ -280,16 +338,17 @@ class MockDataGenerator:
             stats['systems'][system] = {
                 'total_records': len(records),
                 'unique_keys': len(unique_keys),
-                'duplicates': len(records) - len(unique_keys)
+                'duplicates': len(records) - len(unique_keys),
             }
 
-        # Write stats file
-        stats_file = Path(output_dir) / 'generation_stats.json'
-        with open(stats_file, 'w') as f:
+        return stats
+
+    def _write_stats_file(self, stats: Dict[str, Any], stats_path: Path):
+        """Persist generation statistics to disk."""
+        with open(stats_path, 'w') as f:
             json.dump(stats, f, indent=2)
 
-        logger.info(f"Data generation complete. Stats written to {stats_file}")
-        return stats
+        logger.info(f"Data generation statistics written to {stats_path}")
 
 
 def main():

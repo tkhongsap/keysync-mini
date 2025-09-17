@@ -79,11 +79,22 @@ def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, see
         if generate_data:
             logger.info(f"Generating mock data (scenario={scenario}, keys={keys})")
             generator = MockDataGenerator(seed=cfg.get('simulation.seed', 42))
+            failure_setting = cfg.get('simulation.failures.inject_corruption', 0.0)
+            try:
+                failure_chance = float(failure_setting)
+            except (TypeError, ValueError):
+                logger.warning(
+                    "Invalid failure injection setting %r; defaulting to 0", failure_setting
+                )
+                failure_chance = 0.0
+            failure_chance = max(0.0, min(1.0, failure_chance))
+
             stats = generator.generate_test_data(
                 scenario=scenario,
                 keys_per_system=keys,
                 output_dir='input',
-                inject_failures=cfg.get('simulation.failures.inject_corruption', 0) > 0
+                inject_failures=failure_chance,
+                corruption_rate=failure_chance
             )
             logger.info(f"Mock data generated: {json.dumps(stats['systems'], indent=2)}")
 
@@ -120,16 +131,24 @@ def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, see
             output_dir=cfg.get('output.directory', 'output')
         )
 
+        system_files = cfg.get_system_files()
+        if not system_files:
+            input_dir = Path(reconciler.config.get('input_dir', 'input'))
+            system_files = {
+                system: str(input_dir / f"{system}.csv")
+                for system in ['A', 'B', 'C', 'D', 'E']
+            }
+
         # Start reconciliation
         logger.info(f"Starting {mode} reconciliation...")
         run_id = reconciler.start_reconciliation(
             mode=mode,
             execution_mode=execution_mode,
-            system_files=cfg.get_system_files()
+            system_files=system_files
         )
 
         # Perform reconciliation
-        results = reconciler.perform_reconciliation(cfg.get_system_files())
+        results = reconciler.perform_reconciliation(system_files)
 
         # Generate reports (unless in dry-run mode)
         if not dry_run:

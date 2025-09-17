@@ -12,7 +12,12 @@ class Normalizer:
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize normalizer with configuration."""
-        self.config = config or self._get_default_config()
+        base_config = self._get_default_config()
+        self._using_default_config = config is None
+        self._explicit_config_keys = set(config.keys()) if isinstance(config, dict) else set()
+        self.config = base_config.copy()
+        if config:
+            self.config.update(config)
         self.stats = {
             'total_normalized': 0,
             'transformations_applied': {}
@@ -77,7 +82,15 @@ class Normalizer:
             key = new_key
 
         # Left-pad numbers
-        if self.config.get('left_pad_numbers', True):
+        if self._using_default_config:
+            pad_numbers_enabled = self.config.get('left_pad_numbers', True)
+        else:
+            if 'left_pad_numbers' in self._explicit_config_keys:
+                pad_numbers_enabled = bool(self.config.get('left_pad_numbers'))
+            else:
+                pad_numbers_enabled = False
+
+        if pad_numbers_enabled:
             pad_length = self.config.get('pad_length', 6)
 
             def pad_numbers(match):

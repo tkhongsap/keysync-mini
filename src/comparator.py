@@ -4,9 +4,10 @@ import logging
 from typing import Dict, List, Set, Tuple, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
-# import pandas as pd  # Not used in core functionality
 from pathlib import Path
 import csv
+
+import pandas as pd
 
 from normalizer import Normalizer
 
@@ -226,7 +227,7 @@ class Comparator:
 
         return normalized_map, records
 
-    def generate_comparison_summary(self, results: Dict[str, Any]) -> Dict[str, List]:
+    def generate_comparison_summary(self, results: Dict[str, Any]) -> pd.DataFrame:
         """Generate a summary of comparison results."""
         stats = results['statistics']
 
@@ -254,4 +255,5 @@ class Comparator:
             summary_data['Metric'].append(f'Keys in System {system}')
             summary_data['Value'].append(count)
 
-        return summary_data
+        summary_df = pd.DataFrame(summary_data)
+        return summary_df

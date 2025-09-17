@@ -1,5 +1,6 @@
 """Configuration management for KeySync Mini."""
 
+import copy
 import yaml
 import logging
 from pathlib import Path
@@ -14,6 +15,7 @@ class Config:
     def __init__(self, config_file: Optional[str] = None):
         """Initialize configuration from YAML file or defaults."""
         self.config_file = config_file or 'keysync-config.yaml'
+        self._defaults = self._get_default_config()
         self.config = self._load_config()
         self._validate_config()
 
@@ -21,19 +23,23 @@ class Config:
         """Load configuration from YAML file."""
         config_path = Path(self.config_file)
 
+        # Start with defaults so missing sections still have sensible values
+        config = copy.deepcopy(self._defaults)
+
         if config_path.exists():
             try:
                 with open(config_path, 'r') as f:
-                    config = yaml.safe_load(f)
+                    user_config = yaml.safe_load(f) or {}
                 logger.info(f"Loaded configuration from {config_path}")
+                self._deep_update(config, user_config)
                 return config
             except Exception as e:
                 logger.error(f"Failed to load config from {config_path}: {e}")
                 logger.info("Using default configuration")
-                return self._get_default_config()
+                return config
         else:
             logger.info(f"Config file {config_path} not found, using defaults")
-            return self._get_default_config()
+            return config
 
     def _get_default_config(self) -> Dict[str, Any]:
         """Get default configuration."""
@@ -157,7 +163,9 @@ class Config:
 
     def get_section(self, section: str) -> Dict[str, Any]:
         """Get entire configuration section."""
-        return self.config.get(section, {})
+        if section in self.config:
+            return copy.deepcopy(self.config[section])
+        return copy.deepcopy(self._defaults.get(section, {}))
 
     def get_system_files(self) -> Dict[str, str]:
         """Get system file paths from sources configuration."""
@@ -170,15 +178,20 @@ class Config:
 
     def update(self, updates: Dict[str, Any]):
         """Update configuration with new values."""
-        def deep_update(base: dict, update: dict):
-            for key, value in update.items():
-                if isinstance(value, dict) and key in base and isinstance(base[key], dict):
-                    deep_update(base[key], value)
-                else:
-                    base[key] = value
-
-        deep_update(self.config, updates)
+        self._deep_update(self.config, updates)
         logger.info("Configuration updated")
+
+    def _deep_update(self, base: dict, updates: dict):
+        """Recursively merge update values into the base dictionary."""
+        for key, value in updates.items():
+            if (
+                isinstance(value, dict)
+                and key in base
+                and isinstance(base[key], dict)
+            ):
+                self._deep_update(base[key], value)
+            else:
+                base[key] = value
 
     def save(self, file_path: Optional[str] = None):
         """Save configuration to YAML file."""

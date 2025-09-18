@@ -1,7 +1,7 @@
 ## Relevant Files
 
 - `src/sandbox.py` - CLI entry point that exposes sandbox commands aligned with the PRD workflows.
-- `src/sandbox_state.py` - Encapsulates sandbox data models, validation, persistence, and snapshot mechanics.
+- `src/sandbox_state.py` - Implements sandbox state manager, validation helpers, and snapshot workflows shared by CLI/dashboard.
 - `src/scenario_library.py` - Defines built-in and custom scenario descriptors plus execution helpers.
 - `src/config.py` - Extend configuration handling for sandbox defaults and storage locations.
 - `src/keysync.py` - Integrate sandbox triggers with existing reconciliation pipeline and shared utilities.
@@ -24,11 +24,11 @@
 
 ## Tasks
 
-- [ ] 1.0 (MVP) Establish sandbox architecture and shared utilities
-  - [ ] 1.1 Map existing reconciliation data flow to identify integration points for sandbox ingress/egress.
-  - [ ] 1.2 Design sandbox domain models (key records, system sets, snapshots) and write module docstrings outlining responsibilities.
-  - [ ] 1.3 Implement reusable validation, formatting, and logging helpers shared by CLI and dashboard.
-  - [ ] 1.4 Update configuration schema to persist sandbox defaults (storage paths, max keys, seed behavior).
+- [x] 1.0 (MVP) Establish sandbox architecture and shared utilities (2025-09-18T13:20:45Z)
+  - [x] 1.1 Map existing reconciliation data flow to identify integration points for sandbox ingress/egress.
+  - [x] 1.2 Design sandbox domain models (key records, system sets, snapshots) and write module docstrings outlining responsibilities.
+  - [x] 1.3 Implement reusable validation, formatting, and logging helpers shared by CLI and dashboard.
+  - [x] 1.4 Update configuration schema to persist sandbox defaults (storage paths, max keys, seed behavior).
 - [ ] 2.0 (MVP) Deliver CLI-based sandbox operations workflow
   - [ ] 2.1 Implement Click command group in `src/sandbox.py` for initialize, add-key, remove-key, modify-key, reset, status, save-state, load-state.
   - [ ] 2.2 Wire CLI commands to state manager with transactional updates and rollback-on-error safeguards.

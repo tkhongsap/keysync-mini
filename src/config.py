@@ -107,6 +107,13 @@ class Config:
                 'on_corrupt_data': 'log',
                 'retry_attempts': 3,
                 'retry_delay_seconds': 5
+            },
+            'sandbox': {
+                'snapshot_dir': './output/snapshots',
+                'max_keys': 10000,
+                'default_key_prefix': 'CUST',
+                'default_key_count': 1000,
+                'seed': 42
             }
         }
 
@@ -145,6 +152,22 @@ class Config:
         if log_config.get('level') not in valid_levels:
             logger.warning(f"Invalid logging level, using 'INFO'")
             log_config['level'] = 'INFO'
+
+        sandbox_cfg = self.config.get('sandbox', {})
+        try:
+            sandbox_cfg['max_keys'] = max(1, int(sandbox_cfg.get('max_keys', 10000)))
+        except (TypeError, ValueError):
+            logger.warning("Invalid sandbox.max_keys value; defaulting to 10000")
+            sandbox_cfg['max_keys'] = 10000
+        try:
+            sandbox_cfg['default_key_count'] = max(1, int(sandbox_cfg.get('default_key_count', 1000)))
+        except (TypeError, ValueError):
+            logger.warning("Invalid sandbox.default_key_count; defaulting to 1000")
+            sandbox_cfg['default_key_count'] = 1000
+        prefix = sandbox_cfg.get('default_key_prefix', 'CUST')
+        if not isinstance(prefix, str) or not prefix.strip():
+            logger.warning("Invalid sandbox.default_key_prefix; defaulting to 'CUST'")
+            sandbox_cfg['default_key_prefix'] = 'CUST'
 
     def get(self, key: str, default: Any = None) -> Any:
         """Get configuration value by key using dot notation."""

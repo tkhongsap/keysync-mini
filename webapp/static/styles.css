@@ -1,0 +1,26 @@
+body {
+  background-color: #f7f9fc;
+}
+
+.card + .card {
+  margin-top: 1.5rem;
+}
+
+pre.logs {
+  background-color: #111827;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+table tr td:first-child {
+  width: 60%;
+}

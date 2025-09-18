@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-header">Start a reconciliation run</div>
+      <div class="card-body">
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label" for="config_path">Configuration file</label>
+            <input class="form-control" id="config_path" name="config_path" type="text" value="{{ (last_run.config_path if last_run else default_config) | e }}" required>
+            <div class="form-text">Path to the YAML configuration file.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="output_dir">Output directory</label>
+            <input class="form-control" id="output_dir" name="output_dir" type="text" value="{{ (last_run.output_dir if last_run else default_output) | e }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="mode">Reconciliation mode</label>
+            <select class="form-select" id="mode" name="mode">
+              {% for option in modes %}
+                {% set selected = (last_run.mode == option) if last_run else (option == 'full') %}
+                <option value="{{ option }}" {% if selected %}selected{% endif %}>{{ option|capitalize }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="scenario">Simulation scenario</label>
+            <select class="form-select" id="scenario" name="scenario">
+              {% for option in scenarios %}
+                {% set selected = (last_run.scenario == option) if last_run else (option == 'normal') %}
+                <option value="{{ option }}" {% if selected %}selected{% endif %}>{{ option|capitalize }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">Only used when mock data generation is enabled.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="keys">Keys per system</label>
+            <input class="form-control" id="keys" name="keys" type="number" min="1" value="{{ last_run.keys if last_run else 1000 }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="seed">Random seed (optional)</label>
+            <input class="form-control" id="seed" name="seed" type="number" value="{{ last_run.seed if last_run and last_run.seed is not none else '' }}">
+          </div>
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" id="generate_data" name="generate_data" type="checkbox" {% if last_run and last_run.generate_data %}checked{% endif %}>
+            <label class="form-check-label" for="generate_data">Generate mock data before running</label>
+          </div>
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" id="dry_run" name="dry_run" type="checkbox" {% if last_run and last_run.dry_run %}checked{% endif %}>
+            <label class="form-check-label" for="dry_run">Dry-run (skip report generation &amp; persistence)</label>
+          </div>
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" id="auto_approve" name="auto_approve" type="checkbox" {% if last_run and last_run.auto_approve %}checked{% endif %}>
+            <label class="form-check-label" for="auto_approve">Auto-approve proposed master keys</label>
+          </div>
+          <div class="form-check form-switch mb-4">
+            <input class="form-check-input" id="verbose" name="verbose" type="checkbox" {% if last_run and last_run.verbose %}checked{% endif %}>
+            <label class="form-check-label" for="verbose">Capture verbose logs</label>
+          </div>
+          <div class="d-grid">
+            <button class="btn btn-primary" type="submit">Run reconciliation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    {% if last_run %}
+      {% if last_run.status == 'success' %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">Latest run &mdash; ID {{ last_run.run_id }}</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <dl class="row mb-0">
+                  <dt class="col-sm-6">Mode</dt>
+                  <dd class="col-sm-6">{{ last_run.mode|capitalize }}</dd>
+                  <dt class="col-sm-6">Execution</dt>
+                  <dd class="col-sm-6">{{ last_run.execution_mode.replace('-', ' ') if last_run.execution_mode else 'n/a' }}</dd>
+                  <dt class="col-sm-6">Scenario</dt>
+                  <dd class="col-sm-6">{{ last_run.scenario|capitalize }}</dd>
+                  <dt class="col-sm-6">Generated data</dt>
+                  <dd class="col-sm-6">{{ 'Yes' if last_run.generate_data else 'No' }}</dd>
+                </dl>
+              </div>
+              <div class="col-md-6">
+                <dl class="row mb-0">
+                  <dt class="col-sm-6">Dry run</dt>
+                  <dd class="col-sm-6">{{ 'Yes' if last_run.dry_run else 'No' }}</dd>
+                  <dt class="col-sm-6">Auto-approve</dt>
+                  <dd class="col-sm-6">{{ 'Yes' if last_run.auto_approve else 'No' }}</dd>
+                  <dt class="col-sm-6">Output directory</dt>
+                  <dd class="col-sm-6"><code>{{ last_run.output_dir }}</code></dd>
+                  <dt class="col-sm-6">Timestamp</dt>
+                  <dd class="col-sm-6">{{ last_run.view.timestamp or 'n/a' }}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">Key statistics</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <table class="table table-sm align-middle">
+                  <tbody>
+                    {% for label, value in last_run.view.stats_items %}
+                      <tr>
+                        <td>{{ label }}</td>
+                        <td class="text-end">{{ value }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-sm align-middle">
+                  <thead>
+                    <tr>
+                      <th>System</th>
+                      <th class="text-end">Keys</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for system, count in last_run.view.system_counts %}
+                      <tr>
+                        <td>{{ system }}</td>
+                        <td class="text-end">{{ count }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">Discrepancy overview</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <table class="table table-sm align-middle">
+                  <tbody>
+                    {% for label, value in last_run.view.discrepancy_summary %}
+                      <tr>
+                        <td>{{ label }}</td>
+                        <td class="text-end">{{ value }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                {% if last_run.view.duplicate_counts %}
+                  <p class="mb-0"><strong>Duplicate groups</strong></p>
+                  <ul class="small">
+                    {% for system, count in last_run.view.duplicate_counts.items() %}
+                      <li>{{ system }}: {{ count }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                {% if last_run.view.propagation_gaps %}
+                  <details open>
+                    <summary>Propagation gaps by system</summary>
+                    <ul class="small mt-2">
+                      {% for system, keys in last_run.view.propagation_gaps.items() %}
+                        <li><strong>{{ system }}</strong>: {{ keys|length }} gaps</li>
+                      {% endfor %}
+                    </ul>
+                  </details>
+                {% else %}
+                  <p class="text-muted">No propagation gaps detected.</p>
+                {% endif %}
+                {% if last_run.view.keys_missing_in_a %}
+                  <details class="mt-3">
+                    <summary>Keys missing in System A</summary>
+                    <p class="small mt-2 mb-0">Showing up to 25 keys.</p>
+                    <ul class="small mt-1">
+                      {% for key in last_run.view.keys_missing_in_a[:25] %}
+                        <li><code>{{ key }}</code></li>
+                      {% endfor %}
+                    </ul>
+                  </details>
+                {% endif %}
+              </div>
+            </div>
+            {% if last_run.view.out_of_authority %}
+              <details class="mt-3">
+                <summary>Out-of-authority keys</summary>
+                <div class="table-responsive mt-2">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Normalized key</th>
+                        <th>Source systems</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% set max_rows = 25 %}
+                      {% for entry in last_run.view.out_of_authority[:max_rows] %}
+                        <tr>
+                          <td><code>{{ entry.normalized_key }}</code></td>
+                          <td>
+                            {% for system, original in entry.sources %}
+                              <span class="badge bg-secondary me-1">{{ system }}: {{ original }}</span>
+                            {% endfor %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      {% if last_run.view.out_of_authority|length > max_rows %}
+                        <tr>
+                          <td colspan="2" class="text-muted small">Showing first {{ max_rows }} of {{ last_run.view.out_of_authority|length }} entries.</td>
+                        </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            {% else %}
+              <p class="text-muted mb-0">No out-of-authority keys identified.</p>
+            {% endif %}
+          </div>
+        </div>
+        {% if last_run.view.provisioning %}
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">Proposed master keys</div>
+            <div class="card-body table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th>Master key</th>
+                    <th>Source system</th>
+                    <th>Source key</th>
+                    <th>Affected systems</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in last_run.view.provisioning %}
+                    <tr>
+                      <td><code>{{ item.master_key }}</code></td>
+                      <td>{{ item.source_system }}</td>
+                      <td><code>{{ item.source_key }}</code></td>
+                      <td>
+                        {% if item.affected_systems %}
+                          {% for system in item.affected_systems %}
+                            <span class="badge bg-secondary me-1">{{ system }}</span>
+                          {% endfor %}
+                        {% else %}
+                          &mdash;
+                        {% endif %}
+                      </td>
+                      <td>{{ item.status|capitalize }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endif %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">Generated outputs</div>
+          <div class="card-body">
+            {% if last_run.dry_run %}
+              <p class="text-muted mb-0">Dry run was enabled; reports were not generated.</p>
+            {% else %}
+              {% if last_run.report_files %}
+                <ul class="list-unstyled mb-2">
+                  {% for name in last_run.report_files %}
+                    <li><a href="{{ url_for('download_report', filename=name) }}">{{ name }}</a></li>
+                  {% endfor %}
+                  {% if last_run.json_report_name %}
+                    <li><a href="{{ url_for('download_report', filename=last_run.json_report_name) }}">{{ last_run.json_report_name }}</a></li>
+                  {% endif %}
+                </ul>
+              {% else %}
+                <p class="text-muted">No report files were produced.</p>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+        {% if last_run.generated_data %}
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">Mock data generation summary</div>
+            <div class="card-body">
+              <p class="mb-2">Scenario: <strong>{{ last_run.generated_data.scenario|capitalize }}</strong> &middot; Seed: <code>{{ last_run.generated_data.seed }}</code></p>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                  <thead>
+                    <tr>
+                      <th>System</th>
+                      <th class="text-end">Total records</th>
+                      <th class="text-end">Unique keys</th>
+                      <th class="text-end">Duplicates</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for system, stats in last_run.generated_data.systems.items() %}
+                      <tr>
+                        <td>{{ system }}</td>
+                        <td class="text-end">{{ stats.total_records }}</td>
+                        <td class="text-end">{{ stats.unique_keys }}</td>
+                        <td class="text-end">{{ stats.duplicates }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        <div class="card shadow-sm">
+          <div class="card-header">Run logs{% if last_run.verbose %} (verbose){% endif %}</div>
+          <div class="card-body">
+            {% if last_run.logs %}
+              <pre class="logs">{{ last_run.logs }}</pre>
+            {% else %}
+              <p class="text-muted mb-0">No logs were captured for this run.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="card shadow-sm">
+          <div class="card-header">Last run failed</div>
+          <div class="card-body">
+            <p class="text-danger">{{ last_run.error }}</p>
+            {% if last_run.logs %}
+              <pre class="logs">{{ last_run.logs }}</pre>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="card shadow-sm">
+        <div class="card-header">No runs yet</div>
+        <div class="card-body">
+          <p class="mb-0">Submit the form to generate mock data (optional) and launch a reconciliation run. The dashboard will display key statistics, discrepancies, and report links once complete.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

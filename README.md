@@ -9,6 +9,7 @@ A demonstration and testing platform that simulates multi-system key reconciliat
 - **Discrepancy Detection**: Identify out-of-authority keys, propagation gaps, and duplicates
 - **Master Key Provisioning**: Propose and manage master keys for unrecognized entries
 - **Comprehensive Reporting**: Generate 5+ CSV reports with detailed reconciliation results
+- **Interactive Dashboard**: Launch a lightweight web UI to trigger runs and explore outputs
 - **Multiple Execution Modes**: Normal, dry-run, and auto-approve modes
 - **Error Resilience**: Handle missing files, corrupted data, and partial system availability
 - **Performance Optimized**: Process 5,000+ keys per system in under 10 seconds
@@ -49,6 +50,21 @@ python src/keysync.py --dry-run
 # Auto-approve mode (activate master keys automatically)
 python src/keysync.py --auto-approve
 ```
+
+### Launch the Web Dashboard
+
+```bash
+# Install dependencies first (see Installation section)
+
+# Start the dashboard (default http://127.0.0.1:5000)
+python -m webapp.app
+
+# Alternatively, with Flask's CLI
+FLASK_APP=webapp.app flask run --host=0.0.0.0 --port=5000
+```
+
+The dashboard lets you configure a run, trigger reconciliation, and review key statistics,
+discrepancies, generated reports, and captured logs directly in the browser.
 
 ### Using the Convenience Script
 
@@ -148,6 +164,7 @@ keysync-mini/
 ├── logs/               # Application logs
 ├── keysync-config.yaml # Configuration file
 ├── requirements.txt    # Python dependencies
+├── webapp/             # Flask dashboard for running and reviewing simulations
 └── run.sh             # Convenience script
 ```
 

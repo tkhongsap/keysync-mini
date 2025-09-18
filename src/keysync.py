@@ -21,52 +21,56 @@ from reporter import Reporter
 logger = get_logger(__name__)
 
 
-@click.command()
-@click.option('--config', '-c', default='keysync-config.yaml',
-              help='Path to configuration file')
-@click.option('--mode', '-m', type=click.Choice(['full', 'incremental']),
-              default='full', help='Reconciliation mode')
-@click.option('--dry-run', is_flag=True,
-              help='Preview changes without updating registry')
-@click.option('--auto-approve', is_flag=True,
-              help='Automatically activate proposed master keys')
-@click.option('--generate-data', is_flag=True,
-              help='Generate mock data before reconciliation')
-@click.option('--scenario', type=click.Choice(['normal', 'drift', 'failure', 'recovery']),
-              default='normal', help='Test scenario for mock data')
-@click.option('--keys', type=int, default=1000,
-              help='Number of keys per system for mock data')
-@click.option('--seed', type=int, default=None,
-              help='Random seed for reproducible mock data')
-@click.option('--verbose', '-v', is_flag=True,
-              help='Enable verbose logging')
-@click.option('--output-dir', '-o', default='output',
-              help='Directory for output reports')
-def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, seed, verbose, output_dir):
-    """KeySync Mini - Multi-system key reconciliation mockup.
+def run_reconciliation(
+    config: str = 'keysync-config.yaml',
+    mode: str = 'full',
+    dry_run: bool = False,
+    auto_approve: bool = False,
+    generate_data: bool = False,
+    scenario: str = 'normal',
+    keys: int = 1000,
+    seed: int | None = None,
+    output_dir: str = 'output',
+) -> dict:
+    """Execute a reconciliation run and return structured results.
 
-    This tool demonstrates key synchronization across multiple systems,
-    with System A as the authoritative source.
+    Args:
+        config: Path to the configuration file.
+        mode: Reconciliation mode (``full`` or ``incremental``).
+        dry_run: If ``True`` the registry is not updated and reports are skipped.
+        auto_approve: Automatically activate proposed master keys when enabled.
+        generate_data: Generate mock data before running reconciliation.
+        scenario: Mock data scenario to generate when ``generate_data`` is True.
+        keys: Number of keys per system to generate for mock data.
+        seed: Optional random seed to override the configuration seed.
+        output_dir: Destination directory for generated reports.
+
+    Returns:
+        A dictionary containing reconciliation metadata, statistics, reports, and
+        any generated data summary.
     """
-    # Set up logging
-    log_level = 'DEBUG' if verbose else 'INFO'
-    setup_logging(log_level=log_level, log_file='logs/keysync.log')
 
     logger.info("=" * 60)
     logger.info("KeySync Mini - Starting reconciliation")
     logger.info("=" * 60)
 
+    cfg = None
+    db = None
+    generated_data_stats = None
+    reports: list[str] = []
+    json_report_file: str | None = None
+
     try:
         # Load configuration
         cfg = Config(config_file=config)
 
-        # Override config with command-line options
+        # Override config with runtime options
         if seed is not None:
             cfg.update({'simulation': {'seed': seed}})
         if output_dir:
             cfg.update({'output': {'directory': output_dir}})
 
-        # Determine execution mode
+        # Determine execution mode label
         execution_mode = 'normal'
         if dry_run:
             execution_mode = 'dry-run'
@@ -75,7 +79,7 @@ def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, see
             execution_mode = 'auto-approve'
             logger.info("AUTO-APPROVE MODE: Master keys will be activated automatically")
 
-        # Generate mock data if requested
+        # Optionally generate mock data
         if generate_data:
             logger.info(f"Generating mock data (scenario={scenario}, keys={keys})")
             generator = MockDataGenerator(seed=cfg.get('simulation.seed', 42))
@@ -89,14 +93,17 @@ def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, see
                 failure_chance = 0.0
             failure_chance = max(0.0, min(1.0, failure_chance))
 
-            stats = generator.generate_test_data(
+            generated_data_stats = generator.generate_test_data(
                 scenario=scenario,
                 keys_per_system=keys,
                 output_dir='input',
                 inject_failures=failure_chance,
                 corruption_rate=failure_chance
             )
-            logger.info(f"Mock data generated: {json.dumps(stats['systems'], indent=2)}")
+            logger.info(
+                "Mock data generated: %s",
+                json.dumps(generated_data_stats['systems'], indent=2)
+            )
 
         # Initialize components
         logger.info("Initializing components...")
@@ -150,40 +157,98 @@ def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, see
         # Perform reconciliation
         results = reconciler.perform_reconciliation(system_files)
 
-        # Generate reports (unless in dry-run mode)
+        # Generate reports unless this is a dry run
         if not dry_run:
             logger.info("Generating reports...")
             results['enable_trend_analysis'] = cfg.get('output.generate_trend_analysis', False)
             reports = reporter.generate_all_reports(run_id, results)
             logger.info(f"Generated {len(reports)} reports in {reporter.output_dir}")
 
-            # Save detailed JSON report
-            json_file = reporter.write_json_report(
+            # Persist JSON snapshot
+            json_report_file = reporter.write_json_report(
                 f'reconciliation_run_{run_id}_details.json',
                 results
             )
-            logger.info(f"Detailed results saved to {json_file}")
+            logger.info(f"Detailed results saved to {json_report_file}")
 
-        # Complete reconciliation
+        # Mark run complete
         stats = results.get('comparison', {}).get('statistics', {})
         reconciler.complete_reconciliation(stats)
 
-        # Print summary
-        print_summary(results, dry_run)
-
-        # Get final statistics
         final_stats = reconciler.get_run_summary()
         logger.info(f"Run {run_id} completed successfully")
         logger.info(f"Statistics: {json.dumps(final_stats, indent=2, default=str)}")
 
-        # Clean up
-        db.close()
+        output_path = cfg.get('output.directory', 'output')
 
-        return 0
+        return {
+            'status': 'success',
+            'run_id': run_id,
+            'mode': mode,
+            'execution_mode': execution_mode,
+            'dry_run': dry_run,
+            'auto_approve': auto_approve,
+            'results': results,
+            'final_stats': final_stats,
+            'reports': reports,
+            'json_report': json_report_file,
+            'output_dir': output_path,
+            'config_path': config,
+            'generated_data': generated_data_stats,
+        }
 
-    except Exception as e:
-        logger.error(f"Fatal error: {e}", exc_info=True)
+    except Exception:
+        logger.error("Fatal error during reconciliation", exc_info=True)
+        raise
+    finally:
+        if db is not None:
+            db.close()
+
+
+@click.command()
+@click.option('--config', '-c', default='keysync-config.yaml',
+              help='Path to configuration file')
+@click.option('--mode', '-m', type=click.Choice(['full', 'incremental']),
+              default='full', help='Reconciliation mode')
+@click.option('--dry-run', is_flag=True,
+              help='Preview changes without updating registry')
+@click.option('--auto-approve', is_flag=True,
+              help='Automatically activate proposed master keys')
+@click.option('--generate-data', is_flag=True,
+              help='Generate mock data before reconciliation')
+@click.option('--scenario', type=click.Choice(['normal', 'drift', 'failure', 'recovery']),
+              default='normal', help='Test scenario for mock data')
+@click.option('--keys', type=int, default=1000,
+              help='Number of keys per system for mock data')
+@click.option('--seed', type=int, default=None,
+              help='Random seed for reproducible mock data')
+@click.option('--verbose', '-v', is_flag=True,
+              help='Enable verbose logging')
+@click.option('--output-dir', '-o', default='output',
+              help='Directory for output reports')
+def main(config, mode, dry_run, auto_approve, generate_data, scenario, keys, seed, verbose, output_dir):
+    """CLI entry point for executing a reconciliation run."""
+
+    log_level = 'DEBUG' if verbose else 'INFO'
+    setup_logging(log_level=log_level, log_file='logs/keysync.log')
+
+    try:
+        run_details = run_reconciliation(
+            config=config,
+            mode=mode,
+            dry_run=dry_run,
+            auto_approve=auto_approve,
+            generate_data=generate_data,
+            scenario=scenario,
+            keys=keys,
+            seed=seed,
+            output_dir=output_dir,
+        )
+    except Exception:
         return 1
+
+    print_summary(run_details.get('results', {}), dry_run)
+    return 0
 
 
 def print_summary(results: dict, dry_run: bool = False):

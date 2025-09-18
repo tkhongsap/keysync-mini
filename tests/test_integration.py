@@ -18,6 +18,8 @@ from reconciler import Reconciler
 from reporter import Reporter
 from mock_data_generator import MockDataGenerator
 from error_handler import ErrorHandler
+from sandbox_state import build_manager_from_config
+from keysync import run_reconciliation
 
 
 class TestIntegration:
@@ -195,6 +197,44 @@ class TestIntegration:
             assert any(k['run_id'] == run_id for k in master_keys)
 
         db.close()
+
+    def test_sandbox_reconciliation_bridge(self, temp_workspace, test_config):
+        """Ensure sandbox state drives reconciliation via shared configuration."""
+        config_path = Path(temp_workspace) / 'sandbox-config.yaml'
+        input_dir = Path(temp_workspace) / 'input'
+        input_dir.mkdir()
+        sources_block = "\n".join(
+            [
+                'sources:',
+                *[
+                    f"  {system}:\n    type: csv\n    path: {input_dir / f'{system}.csv'}"
+                    for system in ['A', 'B', 'C', 'D', 'E']
+                ],
+                'sandbox:',
+                f"  snapshot_dir: {Path(temp_workspace) / 'snapshots'}",
+                '  default_key_count: 2',
+                '  max_keys: 50',
+                'database:',
+                f"  path: {Path(temp_workspace) / 'sandbox.db'}",
+                'output:',
+                f"  directory: {Path(temp_workspace) / 'output'}",
+            ]
+        )
+        config_path.write_text(sources_block)
+
+        cfg = Config(config_file=str(config_path))
+        manager = build_manager_from_config(cfg)
+        manager.initialize(2)
+        manager.add_keys(['UNAUTH-001'], ['B'])
+
+        result = run_reconciliation(
+            config=str(config_path),
+            mode='full',
+            dry_run=True,
+        )
+        assert result['status'] == 'success'
+        discrepancies = result['results']['discrepancies']
+        assert discrepancies['out_of_authority_keys']
 
     def test_error_handling(self, temp_workspace, test_config):
         """Test error handling with missing files."""

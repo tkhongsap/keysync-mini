@@ -16,6 +16,7 @@ from sandbox_state import (
     ensure_keys,
     load_keys_from_file,
 )
+from keysync import run_reconciliation
 
 logger = get_logger(__name__)
 
@@ -85,14 +86,67 @@ def _get_manager(ctx: click.Context):
     return cfg, manager, sandbox_defaults
 
 
+def _run_reconciliation_with_config(
+    cfg: Config,
+    *,
+    mode: str | None = None,
+    dry_run: bool = False,
+    auto_approve: bool | None = None,
+    generate_data: bool = False,
+    scenario: str | None = None,
+    keys: int | None = None,
+    seed: int | None = None,
+    output_dir: str | None = None,
+) -> Dict[str, Any]:
+    params: Dict[str, Any] = {
+        'config': cfg.config_file,
+        'mode': mode or cfg.get('processing.mode', 'full'),
+        'dry_run': dry_run,
+        'auto_approve': auto_approve if auto_approve is not None else cfg.get('provisioning.auto_approve', False),
+        'generate_data': generate_data,
+        'output_dir': output_dir or cfg.get('output.directory', 'output'),
+    }
+    if scenario:
+        params['scenario'] = scenario
+    if keys is not None:
+        params['keys'] = keys
+    if seed is not None:
+        params['seed'] = seed
+    try:
+        result = run_reconciliation(**params)
+    except Exception as exc:
+        raise click.ClickException(f"Reconciliation failed: {exc}") from exc
+    final_stats = result.get('final_stats') or {}
+    click.echo(
+        f"✓ Reconciliation run {result.get('run_id')} completed (mode={params['mode']})"
+    )
+    if final_stats:
+        total = final_stats.get('total_keys') or final_stats.get('total_records')
+        if total is not None:
+            click.echo(f"  Total keys processed: {total}")
+    return result
+
+
+def _maybe_run_reconciliation(cfg: Config, run_flag: bool) -> None:
+    if not run_flag:
+        return
+    click.echo("\nRunning reconciliation with current sandbox state...")
+    _run_reconciliation_with_config(cfg)
+
+
 @cli.command(name='init')
 @click.option(
     '--keys',
     type=int,
     help='Number of synchronized keys to generate across all systems.',
 )
+@click.option(
+    '--reconcile/--no-reconcile',
+    default=False,
+    help='Run reconciliation immediately after initialization.',
+)
 @click.pass_context
-def initialize(ctx: click.Context, keys: int | None) -> None:
+def initialize(ctx: click.Context, keys: int | None, reconcile: bool) -> None:
     """Create a synchronized baseline across all systems."""
     cfg, manager, sandbox_defaults = _get_manager(ctx)
     default_count = sandbox_defaults.get('default_key_count', 1000)
@@ -101,6 +155,7 @@ def initialize(ctx: click.Context, keys: int | None) -> None:
         manager.initialize(key_count)
         click.echo(f"✓ Initialized {key_count} synchronized keys across systems")
         _display_report(manager.build_status_report())
+        _maybe_run_reconciliation(cfg, reconcile)
     except SandboxValidationError as exc:
         raise click.ClickException(str(exc)) from exc
 
@@ -126,10 +181,15 @@ def status(ctx: click.Context) -> None:
     multiple=True,
     help='Target systems (default: all systems).',
 )
+@click.option(
+    '--reconcile/--no-reconcile',
+    default=False,
+    help='Run reconciliation immediately after adding keys.',
+)
 @click.pass_context
-def add_key(ctx: click.Context, keys: Tuple[str, ...], key_file: Path | None, systems: Tuple[str, ...]):
+def add_key(ctx: click.Context, keys: Tuple[str, ...], key_file: Path | None, systems: Tuple[str, ...], reconcile: bool):
     """Add keys to specified systems."""
-    _, manager, _ = _get_manager(ctx)
+    cfg, manager, _ = _get_manager(ctx)
     try:
         key_values = _resolve_keys(keys, key_file)
         target_systems = systems or tuple(manager.allowed_systems)
@@ -140,6 +200,7 @@ def add_key(ctx: click.Context, keys: Tuple[str, ...], key_file: Path | None, sy
             if system_keys:
                 click.echo(f"  {system}: {', '.join(system_keys)}")
         _display_report(manager.build_status_report())
+        _maybe_run_reconciliation(cfg, reconcile)
     except SandboxValidationError as exc:
         raise click.ClickException(str(exc)) from exc
 
@@ -153,6 +214,11 @@ def add_key(ctx: click.Context, keys: Tuple[str, ...], key_file: Path | None, sy
 )
 @click.option('--pattern', help='Substring pattern to match keys for removal.')
 @click.option('--systems', multiple=True, help='Systems to remove keys from (default: all).')
+@click.option(
+    '--reconcile/--no-reconcile',
+    default=False,
+    help='Run reconciliation after removing keys.',
+)
 @click.pass_context
 def remove_key(
     ctx: click.Context,
@@ -160,11 +226,12 @@ def remove_key(
     key_file: Path | None,
     pattern: str | None,
     systems: Tuple[str, ...],
+    reconcile: bool,
 ) -> None:
     """Remove keys from selected systems."""
     if not keys and not key_file and not pattern:
         raise click.ClickException('Specify --key/--key-file and/or --pattern to remove keys')
-    _, manager, _ = _get_manager(ctx)
+    cfg, manager, _ = _get_manager(ctx)
     try:
         key_values = _resolve_keys(keys, key_file) if (keys or key_file) else []
         target_systems = systems or tuple(manager.allowed_systems)
@@ -174,6 +241,7 @@ def remove_key(
             if removed:
                 click.echo(f"  {system}: {', '.join(removed)}")
         _display_report(manager.build_status_report())
+        _maybe_run_reconciliation(cfg, reconcile)
     except SandboxValidationError as exc:
         raise click.ClickException(str(exc)) from exc
 
@@ -187,12 +255,17 @@ def remove_key(
     help='Rename a key from OLD to NEW. Repeat for multiple renames.'
 )
 @click.option('--systems', multiple=True, help='Systems to apply the rename to (default: all).')
+@click.option(
+    '--reconcile/--no-reconcile',
+    default=False,
+    help='Run reconciliation after modifying keys.',
+)
 @click.pass_context
-def modify_key(ctx: click.Context, rename: Tuple[Tuple[str, str], ...], systems: Tuple[str, ...]) -> None:
+def modify_key(ctx: click.Context, rename: Tuple[Tuple[str, str], ...], systems: Tuple[str, ...], reconcile: bool) -> None:
     """Modify keys by renaming them across systems."""
     if not rename:
         raise click.ClickException('Provide at least one --rename OLD NEW pairing')
-    _, manager, _ = _get_manager(ctx)
+    cfg, manager, _ = _get_manager(ctx)
     try:
         replacements = {old: new for old, new in rename}
         target_systems = systems or tuple(manager.allowed_systems)
@@ -202,14 +275,20 @@ def modify_key(ctx: click.Context, rename: Tuple[Tuple[str, str], ...], systems:
             for old_key, new_key in updates:
                 click.echo(f"  {system}: {old_key} -> {new_key}")
         _display_report(manager.build_status_report())
+        _maybe_run_reconciliation(cfg, reconcile)
     except SandboxValidationError as exc:
         raise click.ClickException(str(exc)) from exc
 
 
 @cli.command(name='reset')
 @click.option('--empty', is_flag=True, help='Reset sandbox to an empty state instead of populated baseline.')
+@click.option(
+    '--reconcile/--no-reconcile',
+    default=False,
+    help='Run reconciliation after resetting the sandbox.',
+)
 @click.pass_context
-def reset(ctx: click.Context, empty: bool) -> None:
+def reset(ctx: click.Context, empty: bool, reconcile: bool) -> None:
     """Reset sandbox to baseline state."""
     cfg, manager, sandbox_defaults = _get_manager(ctx)
     default_count = sandbox_defaults.get('default_key_count', 1000)
@@ -222,8 +301,54 @@ def reset(ctx: click.Context, empty: bool) -> None:
             manager.initialize(default_count)
             click.echo(f"✓ Reset sandbox with {default_count} synchronized keys")
         _display_report(manager.build_status_report())
+        _maybe_run_reconciliation(cfg, reconcile)
     except SandboxValidationError as exc:
         raise click.ClickException(str(exc)) from exc
+
+
+@cli.command(name='reconcile')
+@click.option('--mode', type=click.Choice(['full', 'incremental']), help='Override reconciliation mode.')
+@click.option('--dry-run', is_flag=True, help='Run reconciliation without persisting changes.')
+@click.option('--auto-approve', 'auto_approve_flag', is_flag=True, help='Enable auto-approve for this run.')
+@click.option('--no-auto-approve', 'no_auto_approve_flag', is_flag=True, help='Disable auto-approve for this run.')
+@click.option('--generate-data', is_flag=True, help='Generate mock data using configuration defaults before running.')
+@click.option('--scenario', help='Scenario to use when generating data.')
+@click.option('--keys', type=int, help='Number of keys per system when generating data.')
+@click.option('--seed', type=int, help='Optional random seed override.')
+@click.option('--output-dir', type=click.Path(), help='Override reconciliation output directory.')
+@click.pass_context
+def reconcile_command(
+    ctx: click.Context,
+    mode: str | None,
+    dry_run: bool,
+    auto_approve_flag: bool,
+    no_auto_approve_flag: bool,
+    generate_data: bool,
+    scenario: str | None,
+    keys: int | None,
+    seed: int | None,
+    output_dir: str | None,
+) -> None:
+    """Run the reconciliation engine using current sandbox inputs."""
+    cfg = _load_config(ctx.obj['config_path'], ctx.obj['verbose'])
+    auto_approve = None
+    if auto_approve_flag and no_auto_approve_flag:
+        raise click.ClickException('Specify only one of --auto-approve or --no-auto-approve')
+    if auto_approve_flag:
+        auto_approve = True
+    elif no_auto_approve_flag:
+        auto_approve = False
+    _run_reconciliation_with_config(
+        cfg,
+        mode=mode,
+        dry_run=dry_run,
+        auto_approve=auto_approve,
+        generate_data=generate_data,
+        scenario=scenario,
+        keys=keys,
+        seed=seed,
+        output_dir=output_dir,
+    )
 
 
 @cli.command(name='save-state')
@@ -245,14 +370,20 @@ def save_state(ctx: click.Context, name: str, note: str | None) -> None:
 
 @cli.command(name='load-state')
 @click.argument('snapshot', type=click.Path(path_type=Path))
+@click.option(
+    '--reconcile/--no-reconcile',
+    default=False,
+    help='Run reconciliation after loading the snapshot.',
+)
 @click.pass_context
-def load_state(ctx: click.Context, snapshot: Path) -> None:
+def load_state(ctx: click.Context, snapshot: Path, reconcile: bool) -> None:
     """Load a previously saved snapshot."""
-    _, manager, _ = _get_manager(ctx)
+    cfg, manager, _ = _get_manager(ctx)
     try:
         manager.load_snapshot(snapshot)
         click.echo(f"✓ Loaded snapshot from {snapshot}")
         _display_report(manager.build_status_report())
+        _maybe_run_reconciliation(cfg, reconcile)
     except SandboxValidationError as exc:
         raise click.ClickException(str(exc)) from exc
 

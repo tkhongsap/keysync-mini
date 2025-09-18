@@ -14,6 +14,7 @@
 - `tests/test_scenarios.py` - Unit tests for scenario library execution paths and expectations.
 - `tests/test_integration.py` - Extend integration coverage for sandbox-to-reconciliation flows.
 - `tests/test_keysync_frontend.py` - Capture new UI interactions and API hooks in the dashboard.
+- `run.sh` - Runner script chaining sandbox operations into reconciliation workflows.
 
 ### Notes
 
@@ -38,9 +39,9 @@
 - [x] 3.0 (MVP) Implement sandbox state persistence (2025-09-18T13:29:12Z)
   - [x] 3.1 Build snapshot save/load APIs with metadata (creator, timestamp, description) and file locking.
   - [x] 3.2 Implement reset-to-baseline options (empty vs populated) honoring saved states.
-- [ ] 4.0 (MVP) Reconciliation integration and QA coverage
-  - [ ] 4.1 Integrate sandbox runs with reconciliation engine; allow chained execution via CLI flag or `run.sh`.
-  - [ ] 4.2 Extend pytest coverage for sandbox operations, snapshot workflows, and reconciliation assertions.
+- [x] 4.0 (MVP) Reconciliation integration and QA coverage (2025-09-18T13:38:29Z)
+  - [x] 4.1 Integrate sandbox runs with reconciliation engine; allow chained execution via CLI flag or `run.sh`.
+  - [x] 4.2 Extend pytest coverage for sandbox operations, snapshot workflows, and reconciliation assertions.
 
 ### Post-MVP Backlog
 

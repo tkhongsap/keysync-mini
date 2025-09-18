@@ -1,6 +1,6 @@
 ## Relevant Files
 
-- `src/sandbox.py` - CLI entry point that exposes sandbox commands aligned with the PRD workflows.
+- `src/sandbox.py` - CLI entry point for sandbox operations, summaries, and snapshot utilities.
 - `src/sandbox_state.py` - Implements sandbox state manager, validation helpers, and snapshot workflows shared by CLI/dashboard.
 - `src/scenario_library.py` - Defines built-in and custom scenario descriptors plus execution helpers.
 - `src/config.py` - Extend configuration handling for sandbox defaults and storage locations.
@@ -29,15 +29,15 @@
   - [x] 1.2 Design sandbox domain models (key records, system sets, snapshots) and write module docstrings outlining responsibilities.
   - [x] 1.3 Implement reusable validation, formatting, and logging helpers shared by CLI and dashboard.
   - [x] 1.4 Update configuration schema to persist sandbox defaults (storage paths, max keys, seed behavior).
-- [ ] 2.0 (MVP) Deliver CLI-based sandbox operations workflow
-  - [ ] 2.1 Implement Click command group in `src/sandbox.py` for initialize, add-key, remove-key, modify-key, reset, status, save-state, load-state.
-  - [ ] 2.2 Wire CLI commands to state manager with transactional updates and rollback-on-error safeguards.
-  - [ ] 2.3 Support bulk operations via CSV uploads or inline lists; ensure validation errors are user-friendly.
-  - [ ] 2.4 Generate state summary output (per-system counts, discrepancy hints) after each operation.
-  - [ ] 2.5 Add CLI help text, examples, and ensure `python src/sandbox.py --help` reflects PRD actions.
-- [ ] 3.0 (MVP) Implement sandbox state persistence
-  - [ ] 3.1 Build snapshot save/load APIs with metadata (creator, timestamp, description) and file locking.
-  - [ ] 3.2 Implement reset-to-baseline options (empty vs populated) honoring saved states.
+- [x] 2.0 (MVP) Deliver CLI-based sandbox operations workflow (2025-09-18T13:26:35Z)
+  - [x] 2.1 Implement Click command group in `src/sandbox.py` for initialize, add-key, remove-key, modify-key, reset, status, save-state, load-state.
+  - [x] 2.2 Wire CLI commands to state manager with transactional updates and rollback-on-error safeguards.
+  - [x] 2.3 Support bulk operations via CSV uploads or inline lists; ensure validation errors are user-friendly.
+  - [x] 2.4 Generate state summary output (per-system counts, discrepancy hints) after each operation.
+  - [x] 2.5 Add CLI help text, examples, and ensure `python src/sandbox.py --help` reflects PRD actions.
+- [x] 3.0 (MVP) Implement sandbox state persistence (2025-09-18T13:29:12Z)
+  - [x] 3.1 Build snapshot save/load APIs with metadata (creator, timestamp, description) and file locking.
+  - [x] 3.2 Implement reset-to-baseline options (empty vs populated) honoring saved states.
 - [ ] 4.0 (MVP) Reconciliation integration and QA coverage
   - [ ] 4.1 Integrate sandbox runs with reconciliation engine; allow chained execution via CLI flag or `run.sh`.
   - [ ] 4.2 Extend pytest coverage for sandbox operations, snapshot workflows, and reconciliation assertions.

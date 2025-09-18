@@ -10,10 +10,14 @@ from __future__ import annotations
 
 import json
 import csv
+import os
+import time
+import getpass
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Sequence, Dict, List, Mapping, Optional, Set, Tuple
+from contextlib import AbstractContextManager
 
 from logger import get_logger
 
@@ -31,6 +35,37 @@ class SandboxError(Exception):
 
 class SandboxValidationError(SandboxError):
     """Raised when sandbox input fails validation checks."""
+
+
+class FileLock(AbstractContextManager):
+    """Simple file-based lock supporting cross-process coordination."""
+
+    def __init__(self, path: Path, timeout: float = 5.0, poll_interval: float = 0.1):
+        self.path = path
+        self.timeout = timeout
+        self.poll_interval = poll_interval
+        self._handle: Optional[int] = None
+
+    def __enter__(self) -> "FileLock":
+        deadline = time.time() + self.timeout
+        while True:
+            try:
+                self._handle = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+                break
+            except FileExistsError:
+                if time.time() > deadline:
+                    raise SandboxError(f"Unable to acquire lock: {self.path}")
+                time.sleep(self.poll_interval)
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        if self._handle is not None:
+            os.close(self._handle)
+            self._handle = None
+        try:
+            self.path.unlink()
+        except FileNotFoundError:
+            pass
 
 
 @dataclass
@@ -108,6 +143,26 @@ def ensure_directory(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def load_keys_from_file(file_path: Path) -> List[str]:
+    """Load keys from a text or CSV file."""
+    if not file_path.exists():
+        raise SandboxValidationError(f"Key source not found: {file_path}")
+    keys: List[str] = []
+    if file_path.suffix.lower() == '.csv':
+        with file_path.open('r', newline='') as handle:
+            reader = csv.DictReader(handle)
+            if 'key' not in reader.fieldnames:
+                raise SandboxValidationError(
+                    f"CSV file {file_path} must contain a 'key' column"
+                )
+            for row in reader:
+                keys.append(row.get('key', ''))
+    else:
+        with file_path.open('r', encoding='utf-8') as handle:
+            keys.extend(line.strip() for line in handle if line.strip())
+    return ensure_keys(keys)
+
+
 class SandboxState:
     """In-memory representation of sandbox data across systems."""
 
@@ -136,11 +191,15 @@ class SandboxState:
         """Persist current state to CSV files."""
         for system, path in self.system_files.items():
             ensure_directory(path.parent)
-            with path.open("w", newline="") as handle:
-                writer = csv.DictWriter(handle, fieldnames=DEFAULT_HEADER)
-                writer.writeheader()
-                for record in sorted(self.records[system].values(), key=lambda r: r.key):
-                    writer.writerow(record.to_row())
+            temp_path = path.with_suffix(path.suffix + ".tmp")
+            lock_path = path.with_suffix(path.suffix + ".lock")
+            with FileLock(lock_path):
+                with temp_path.open("w", newline="") as handle:
+                    writer = csv.DictWriter(handle, fieldnames=DEFAULT_HEADER)
+                    writer.writeheader()
+                    for record in sorted(self.records[system].values(), key=lambda r: r.key):
+                        writer.writerow(record.to_row())
+                temp_path.replace(path)
 
     def get_union(self) -> Set[str]:
         """Return the union of keys across all systems."""
@@ -337,20 +396,27 @@ class SandboxStateManager:
         safe_name = name.replace(" ", "_")
         snapshot_path = self.snapshot_dir / f"{timestamp}_{safe_name}"
         ensure_directory(snapshot_path)
-        for system, path in self.state.system_files.items():
-            target = snapshot_path / Path(path.name)
-            ensure_directory(target.parent)
-            with target.open("w", newline="") as handle:
-                writer = csv.DictWriter(handle, fieldnames=DEFAULT_HEADER)
-                writer.writeheader()
-                for record in sorted(self.state.records[system].values(), key=lambda r: r.key):
-                    writer.writerow(record.to_row())
+        lock = FileLock(self.snapshot_dir / ".sandbox_snapshot.lock")
+        with lock:
+            for system, path in self.state.system_files.items():
+                target = snapshot_path / Path(path.name)
+                ensure_directory(target.parent)
+                with target.open("w", newline="") as handle:
+                    writer = csv.DictWriter(handle, fieldnames=DEFAULT_HEADER)
+                    writer.writeheader()
+                    for record in sorted(self.state.records[system].values(), key=lambda r: r.key):
+                        writer.writerow(record.to_row())
         metadata_payload = {
             "created_at": datetime.utcnow().strftime(ISO_TIMESTAMP_FMT),
             "systems": self.allowed_systems,
+            "creator": getpass.getuser(),
+            "name": name,
         }
         if metadata:
             metadata_payload.update(metadata)
+        description = metadata_payload.get('description') or metadata_payload.get('note')
+        if description:
+            metadata_payload['description'] = description
         with (snapshot_path / "metadata.json").open("w", encoding="utf-8") as meta_file:
             json.dump(metadata_payload, meta_file, indent=2)
         logger.info("Saved snapshot to %s", snapshot_path)
@@ -361,14 +427,16 @@ class SandboxStateManager:
         snapshot_path = snapshot_path.expanduser().resolve()
         if not snapshot_path.exists() or not snapshot_path.is_dir():
             raise SandboxValidationError(f"Snapshot directory not found: {snapshot_path}")
-        for system, target_path in self.state.system_files.items():
-            source = snapshot_path / target_path.name
-            if not source.exists():
-                raise SandboxValidationError(
-                    f"Snapshot missing data for system {system}: {source}"
-                )
-            ensure_directory(target_path.parent)
-            target_path.write_bytes(source.read_bytes())
+        lock = FileLock(self.snapshot_dir / ".sandbox_snapshot.lock")
+        with lock:
+            for system, target_path in self.state.system_files.items():
+                source = snapshot_path / target_path.name
+                if not source.exists():
+                    raise SandboxValidationError(
+                        f"Snapshot missing data for system {system}: {source}"
+                    )
+                ensure_directory(target_path.parent)
+                target_path.write_bytes(source.read_bytes())
         self.load()
         logger.info("Loaded snapshot from %s", snapshot_path)
 
@@ -433,4 +501,5 @@ __all__ = [
     "ensure_keys",
     "ensure_systems",
     "sanitize_key",
+    "load_keys_from_file",
 ]

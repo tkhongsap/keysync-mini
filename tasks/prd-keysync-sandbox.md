@@ -26,6 +26,17 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
 - Not implementing real-time synchronization between systems
 - Not creating a full CRUD database interface
 
+### 1.5 MVP Scope
+- **In Scope (MVP)**: CLI-driven sandbox initialization, key add/remove/modify/reset operations, state summaries, baseline snapshot save/load, and optional hand-off into the existing reconciliation run.
+- **Post-MVP**: Scenario library and builder, REST/API surfaces, dashboard integration, collaboration features, history analytics, advanced performance targets beyond CSV workflows, and guided tutorials.
+
+### 1.6 MVP Acceptance Criteria
+- CLI commands (`init`, `add-key`, `remove-key`, `modify-key`, `reset`, `status`, `save-state`, `load-state`) execute against Systems A–E CSVs with validation and rollback on failure.
+- State snapshots persist to a configurable location and can be restored without manual file edits.
+- Post-operation summaries report per-system totals and discrepancy hints consistent with reconciliation expectations.
+- Reconciliation entry point (`keysync.py`) can consume sandbox state without regression to existing flows.
+- Automated tests cover core state transitions and error handling for the in-scope commands.
+
 ## 2. User Stories
 
 ### 2.1 As a Developer
@@ -50,34 +61,36 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
 
 ## 3. Functional Requirements
 
+Requirements below are tagged as **(MVP)** or **(Post-MVP)** to reflect delivery scope.
+
 ### 3.1 Core Sandbox Operations
 
-#### FR-1: Initialize Synchronized State
+#### FR-1 (MVP): Initialize Synchronized State
 - System SHALL provide ability to create perfectly synchronized data across all systems
 - User SHALL specify the number of keys (default: 1000)
 - System SHALL use consistent key format across all systems
 - System SHALL clear any existing data before initialization
 
-#### FR-2: Add Keys to Specific Systems
+#### FR-2 (MVP): Add Keys to Specific Systems
 - User SHALL be able to add one or more keys to specified systems
 - System SHALL support adding to multiple systems in a single operation
 - System SHALL maintain CSV format consistency
 - System SHALL support bulk addition via file upload or list input
 
-#### FR-3: Remove Keys from Specific Systems
+#### FR-3 (MVP): Remove Keys from Specific Systems
 - User SHALL be able to remove specific keys from selected systems
 - System SHALL support pattern-based removal (e.g., remove all keys starting with "CUST-")
 - System SHALL provide confirmation before destructive operations
 - System SHALL log all removal operations
 
-#### FR-4: Modify Keys in Systems
+#### FR-4 (MVP): Modify Keys in Systems
 - User SHALL be able to modify key values (e.g., change case, add spaces)
 - System SHALL support introducing formatting variations for normalization testing
 - System SHALL allow corruption injection (malformed keys)
 
 ### 3.2 State Management
 
-#### FR-5: Show Current State
+#### FR-5 (MVP): Show Current State
 - System SHALL display current key distribution across all systems
 - Display SHALL include:
   - Total keys per system
@@ -86,20 +99,20 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - Detected discrepancies
 - System SHALL support export of state summary
 
-#### FR-6: Save and Load States
+#### FR-6 (MVP): Save and Load States
 - User SHALL be able to save current sandbox state with a name
 - System SHALL store state as snapshot including all CSV data
 - User SHALL be able to load previously saved states
 - System SHALL support sharing states between users
 
-#### FR-7: Reset to Baseline
+#### FR-7 (MVP): Reset to Baseline
 - System SHALL provide one-click reset to synchronized state
 - User SHALL be able to choose between empty reset or populated reset
 - System SHALL preserve saved states during reset
 
-### 3.3 Scenario Management
+### 3.3 Scenario Management (Post-MVP)
 
-#### FR-8: Pre-built Test Scenarios
+#### FR-8 (Post-MVP): Pre-built Test Scenarios
 - System SHALL include library of common test scenarios:
   - New Product Launch (propagation from A)
   - Unauthorized Keys (additions to non-A systems)
@@ -108,7 +121,7 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - Recovery Process (convergence to sync)
 - Each scenario SHALL include description and expected outcomes
 
-#### FR-9: Custom Scenario Builder
+#### FR-9 (Post-MVP): Custom Scenario Builder
 - User SHALL be able to create custom scenarios with multiple steps
 - System SHALL support scenario scripting with:
   - Sequential operations
@@ -116,7 +129,7 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - Validation checkpoints
 - User SHALL be able to save and share custom scenarios
 
-#### FR-10: Scenario Execution
+#### FR-10 (Post-MVP): Scenario Execution
 - System SHALL execute scenarios step-by-step or all-at-once
 - System SHALL provide pause/resume capability
 - System SHALL log all scenario actions
@@ -124,7 +137,7 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
 
 ### 3.4 Integration Features
 
-#### FR-11: CLI Interface
+#### FR-11 (MVP): CLI Interface
 - System SHALL provide command-line interface for all sandbox operations
 - CLI SHALL support:
   - Interactive mode with prompts
@@ -132,7 +145,7 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - Batch operations via script files
 - CLI SHALL provide comprehensive help documentation
 
-#### FR-12: Web Dashboard Integration
+#### FR-12 (Post-MVP): Web Dashboard Integration
 - System SHALL integrate sandbox controls into existing web dashboard
 - Dashboard SHALL provide:
   - Visual data editor for CSV files
@@ -141,7 +154,7 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - Scenario execution controls
 - Changes SHALL be immediately reflected in backend CSV files
 
-#### FR-13: API Endpoints
+#### FR-13 (Post-MVP): API Endpoints
 - System SHALL expose REST API for sandbox operations
 - API SHALL support:
   - All CRUD operations on keys
@@ -149,9 +162,9 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - Scenario execution
 - API SHALL return structured JSON responses
 
-### 3.5 Monitoring and Analytics
+### 3.5 Monitoring and Analytics (Post-MVP)
 
-#### FR-14: Change History
+#### FR-14 (Post-MVP): Change History
 - System SHALL maintain history of all sandbox operations
 - History SHALL include:
   - Timestamp
@@ -161,7 +174,7 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
   - User/source of change
 - System SHALL support history export
 
-#### FR-15: Reconciliation Impact Analysis
+#### FR-15 (Post-MVP): Reconciliation Impact Analysis
 - System SHALL predict reconciliation outcomes before execution
 - Analysis SHALL show:
   - Expected discrepancies to be found
@@ -174,11 +187,11 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
 ### 4.1 Performance
 - NFR-1: Sandbox operations SHALL complete within 2 seconds for up to 10,000 keys per system
 - NFR-2: State save/load SHALL complete within 5 seconds
-- NFR-3: Web dashboard SHALL update within 500ms of changes
+- NFR-3 (Post-MVP): Web dashboard SHALL update within 500ms of changes
 
 ### 4.2 Usability
 - NFR-4: CLI commands SHALL follow Unix conventions
-- NFR-5: Web interface SHALL be responsive on screens ≥768px width
+- NFR-5 (Post-MVP): Web interface SHALL be responsive on screens ≥768px width
 - NFR-6: Error messages SHALL provide actionable guidance
 
 ### 4.3 Reliability
@@ -196,14 +209,14 @@ Currently, KeySync Mini generates mock data with predefined scenarios (normal, d
 ### 5.1 Architecture Considerations
 - Sandbox manager as separate module from core reconciliation
 - Stateless operations with filesystem as source of truth
-- Event-driven architecture for change notifications
+- Event-driven architecture for change notifications (Post-MVP)
 - Modular design for easy extension
 
 ### 5.2 Data Storage
 - CSV files remain primary storage (consistency with existing system)
 - Sandbox states stored in `sandbox_states/` directory
-- Scenarios stored as JSON in `sandbox_scenarios/` directory
-- History stored in SQLite database
+- Scenarios stored as JSON in `sandbox_scenarios/` directory (Post-MVP)
+- History stored in SQLite database (Post-MVP)
 
 ### 5.3 Dependencies
 - No new external dependencies required
@@ -270,25 +283,32 @@ $ python src/sandbox.py remove-key "CUST-00100" --systems D,E
 
 ## 8. Implementation Phases
 
-### Phase 1: Core Sandbox (Week 1-2)
+### Phase 1 (MVP): Core Sandbox (Week 1-2)
 - Basic CLI implementation
 - Add/remove/modify operations
 - State management
 - Status display
 
-### Phase 2: Scenario System (Week 3)
+### Phase 2 (MVP): CLI Workflow Enhancements (Week 3)
+- Extend CLI operations (bulk inputs, validation UX)
+- Implement transactional safeguards with rollback-on-error
+- Produce state summaries after every command
+- Finalize snapshot save/load and baseline reset behavior
+- Document commands and examples in CLI help output
+
+### Phase 3 (Post-MVP): Scenario System (Week TBD)
 - Pre-built scenarios
 - Scenario builder
 - Execution engine
 - Validation framework
 
-### Phase 3: Web Integration (Week 4)
+### Phase 4 (Post-MVP): Web Integration (Week TBD)
 - Dashboard integration
 - Visual editor
 - Real-time updates
 - API endpoints
 
-### Phase 4: Advanced Features (Week 5)
+### Phase 5 (Post-MVP): Advanced Features (Week TBD)
 - History tracking
 - Impact analysis
 - Batch operations
@@ -303,13 +323,13 @@ $ python src/sandbox.py remove-key "CUST-00100" --systems D,E
 
 ### 9.2 Integration Testing
 - Test sandbox with reconciliation engine
-- Verify scenario execution end-to-end
-- Test concurrent operations
+- Verify scenario execution end-to-end (Post-MVP)
+- Test concurrent operations (Post-MVP)
 
 ### 9.3 User Acceptance Testing
 - Developer workflow testing
-- QA scenario testing
-- Performance benchmarking
+- QA scenario testing (Post-MVP)
+- Performance benchmarking (Post-MVP)
 
 ## 10. Risks and Mitigations
 
@@ -320,7 +340,7 @@ $ python src/sandbox.py remove-key "CUST-00100" --systems D,E
 | Complexity overwhelming new users | Medium | Medium | Provide guided tutorials and templates |
 | State management conflicts | Low | Low | Use file locking and atomic operations |
 
-## 11. Open Questions
+## 11. Open Questions (Post-MVP)
 
 1. Should sandbox operations be reversible (undo/redo)?
 2. Should we support real-time collaboration (multiple users)?

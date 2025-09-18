@@ -24,29 +24,32 @@
 
 ## Tasks
 
-- [ ] 1.0 Establish sandbox architecture and shared utilities
+- [ ] 1.0 (MVP) Establish sandbox architecture and shared utilities
   - [ ] 1.1 Map existing reconciliation data flow to identify integration points for sandbox ingress/egress.
   - [ ] 1.2 Design sandbox domain models (key records, system sets, snapshots) and write module docstrings outlining responsibilities.
   - [ ] 1.3 Implement reusable validation, formatting, and logging helpers shared by CLI and dashboard.
   - [ ] 1.4 Update configuration schema to persist sandbox defaults (storage paths, max keys, seed behavior).
-- [ ] 2.0 Deliver CLI-based sandbox operations workflow
-  - [ ] 2.1 Implement Click command group in `src/sandbox.py` for initialize, add-key, remove-key, modify-key, reset.
+- [ ] 2.0 (MVP) Deliver CLI-based sandbox operations workflow
+  - [ ] 2.1 Implement Click command group in `src/sandbox.py` for initialize, add-key, remove-key, modify-key, reset, status, save-state, load-state.
   - [ ] 2.2 Wire CLI commands to state manager with transactional updates and rollback-on-error safeguards.
   - [ ] 2.3 Support bulk operations via CSV uploads or inline lists; ensure validation errors are user-friendly.
   - [ ] 2.4 Generate state summary output (per-system counts, discrepancy hints) after each operation.
   - [ ] 2.5 Add CLI help text, examples, and ensure `python src/sandbox.py --help` reflects PRD actions.
-- [ ] 3.0 Implement sandbox state persistence and scenario management
+- [ ] 3.0 (MVP) Implement sandbox state persistence
   - [ ] 3.1 Build snapshot save/load APIs with metadata (creator, timestamp, description) and file locking.
   - [ ] 3.2 Implement reset-to-baseline options (empty vs populated) honoring saved states.
-  - [ ] 3.3 Create pre-built scenarios aligned with PRD (launch, unauthorized, partition, corruption, recovery) plus expected outcomes.
-  - [ ] 3.4 Develop custom scenario builder bindings supporting scripted sequences and validations.
-  - [ ] 3.5 Provide export/import utilities to share scenarios and states across environments.
-- [ ] 4.0 Enable automation, reconciliation integration, and QA tooling
-  - [ ] 4.1 Expose sandbox APIs for programmatic control (Python interface for tests and CI usage).
-  - [ ] 4.2 Integrate sandbox runs with reconciliation engine; allow chained execution via CLI flag or `run.sh`.
-  - [ ] 4.3 Capture state change history and operation logs for auditing and QA review.
-  - [ ] 4.4 Extend pytest coverage for scenario execution, history tracking, and reconciliation assertions.
-  - [ ] 4.5 Document automation pathways for CI/CD (commands, environment variables, sample scripts).
+- [ ] 4.0 (MVP) Reconciliation integration and QA coverage
+  - [ ] 4.1 Integrate sandbox runs with reconciliation engine; allow chained execution via CLI flag or `run.sh`.
+  - [ ] 4.2 Extend pytest coverage for sandbox operations, snapshot workflows, and reconciliation assertions.
+
+### Post-MVP Backlog
+
+- [ ] 3.3 Create pre-built scenarios aligned with PRD (launch, unauthorized, partition, corruption, recovery) plus expected outcomes.
+- [ ] 3.4 Develop custom scenario builder bindings supporting scripted sequences and validations.
+- [ ] 3.5 Provide export/import utilities to share scenarios and states across environments.
+- [ ] 4.3 Capture state change history and operation logs for auditing and QA review.
+- [ ] 4.4 Extend pytest coverage for scenario execution, history tracking, and reconciliation assertions.
+- [ ] 4.5 Document automation pathways for CI/CD (commands, environment variables, sample scripts).
 - [ ] 5.0 Extend web dashboard with interactive sandbox experience
   - [ ] 5.1 Add Flask routes/APIs for sandbox operations, state display, and scenario CRUD.
   - [ ] 5.2 Update templates with controls (initialize, add/remove/modify key, run scenario, save/load state) and real-time stats.

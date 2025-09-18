@@ -4,7 +4,7 @@ import copy
 import yaml
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +14,23 @@ class Config:
 
     def __init__(self, config_file: Optional[str] = None):
         """Initialize configuration from YAML file or defaults."""
-        self.config_file = config_file or 'keysync-config.yaml'
+        initial_path = Path(config_file or 'keysync-config.yaml').expanduser()
+        if not initial_path.is_absolute():
+            initial_path = (Path.cwd() / initial_path).resolve()
+        else:
+            initial_path = initial_path.resolve()
+
+        self.config_path = initial_path
+        self.config_file = str(self.config_path)
+        self._config_dir = self.config_path.parent
+
         self._defaults = self._get_default_config()
         self.config = self._load_config()
         self._validate_config()
 
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file."""
-        config_path = Path(self.config_file)
+        config_path = self.config_path
 
         # Start with defaults so missing sections still have sensible values
         config = copy.deepcopy(self._defaults)
@@ -193,11 +202,30 @@ class Config:
     def get_system_files(self) -> Dict[str, str]:
         """Get system file paths from sources configuration."""
         sources = self.get_section('sources')
-        return {
-            system: source['path']
-            for system, source in sources.items()
-            if source.get('type') == 'csv'
-        }
+        resolved: Dict[str, str] = {}
+        for system, source in sources.items():
+            if source.get('type') != 'csv':
+                continue
+            raw_path = source.get('path')
+            if not raw_path:
+                continue
+            resolved_path = self.resolve_path(raw_path)
+            resolved[system] = str(resolved_path)
+        return resolved
+
+    @property
+    def config_dir(self) -> Path:
+        """Directory containing the configuration file."""
+        return self._config_dir
+
+    def resolve_path(self, value: Union[str, Path]) -> Path:
+        """Resolve paths relative to the configuration file location."""
+        path = Path(value).expanduser()
+        if not path.is_absolute():
+            path = (self._config_dir / path).resolve()
+        else:
+            path = path.resolve()
+        return path
 
     def update(self, updates: Dict[str, Any]):
         """Update configuration with new values."""
@@ -218,7 +246,10 @@ class Config:
 
     def save(self, file_path: Optional[str] = None):
         """Save configuration to YAML file."""
-        save_path = Path(file_path or self.config_file)
+        save_target = Path(file_path).expanduser() if file_path else self.config_path
+        if not save_target.is_absolute():
+            save_target = (self._config_dir / save_target).resolve()
+        save_path = save_target
         save_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(save_path, 'w') as f:

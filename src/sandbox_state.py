@@ -219,18 +219,26 @@ class SandboxState:
             intersection &= set(records.keys())
         return intersection
 
+    def key_frequencies(self) -> Dict[str, int]:
+        """Return a mapping of key -> occurrence count across systems."""
+        frequencies: Dict[str, int] = {}
+        for records in self.records.values():
+            for key in records.keys():
+                frequencies[key] = frequencies.get(key, 0) + 1
+        return frequencies
+
     def summary(self) -> Dict[str, Dict[str, int]]:
         """Produce summary statistics per system."""
         union = self.get_union()
+        frequencies = self.key_frequencies()
         summary: Dict[str, Dict[str, int]] = {}
         for system, records in self.records.items():
             keys = set(records.keys())
-            other_union = union - keys
-            unique = keys - (union - keys)
+            unique_count = sum(1 for key in keys if frequencies.get(key, 0) == 1)
             summary[system] = {
                 "total": len(keys),
-                "unique": len(unique),
-                "missing_from_union": len(other_union),
+                "unique": unique_count,
+                "missing_from_union": len(union - keys),
             }
         return summary
 
@@ -478,7 +486,9 @@ def build_manager_from_config(config: "Config") -> SandboxStateManager:
         for system, path in config.get_system_files().items()
     }
     sandbox_cfg = config.get_section("sandbox")
-    snapshot_dir = Path(sandbox_cfg.get("snapshot_dir", "./output/snapshots"))
+    snapshot_dir = config.resolve_path(
+        sandbox_cfg.get("snapshot_dir", "./output/snapshots")
+    )
     max_keys = int(sandbox_cfg.get("max_keys", 10000))
     key_prefix = sandbox_cfg.get("default_key_prefix", "CUST")
     manager = SandboxStateManager(
